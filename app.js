@@ -58,6 +58,66 @@
     return map;
   }
 
+  function normalizeSongKey(song) {
+    return [song && song.id, song && song.title, song && song.artist]
+      .map(function (value) {
+        return String(value || '').trim().toLowerCase();
+      })
+      .join('::');
+  }
+
+  function createImportReport(payload) {
+    var songs = Array.isArray(payload && payload.songs) ? payload.songs : [];
+    var issues = [];
+
+    if (!songs.length) {
+      issues.push('Nenhuma faixa encontrada no manifesto.');
+    }
+
+    songs.forEach(function (song, index) {
+      if (!song || (!song.id && !song.title)) {
+        issues.push('Faixa ' + (index + 1) + ' sem id ou titulo.');
+      }
+
+      if (song && song.lyricsPath && !song.lyrics && !song.lyricsText) {
+        issues.push('Faixa ' + (song.title || index + 1) + ' referencia lyricsPath sem texto carregado.');
+      }
+    });
+
+    return {
+      valid: !issues.length,
+      issues: issues,
+      count: songs.length,
+    };
+  }
+
+  function mergeImportedSongs(existingSongs, incomingSongs) {
+    var merged = existingSongs.slice();
+    var seen = {};
+    var replacedCount = 0;
+
+    merged.forEach(function (song) {
+      seen[normalizeSongKey(song)] = true;
+    });
+
+    incomingSongs.forEach(function (song) {
+      var key = normalizeSongKey(song);
+      if (seen[key]) {
+        merged = merged.filter(function (entry) {
+          return normalizeSongKey(entry) !== key;
+        });
+        replacedCount += 1;
+      }
+      seen[key] = true;
+      merged.unshift(song);
+    });
+
+    return {
+      songs: merged,
+      replacedCount: replacedCount,
+    };
+  }
+
   function hzToCents(sourceHz, targetHz) {
     if (!Number.isFinite(sourceHz) || !Number.isFinite(targetHz) || sourceHz <= 0 || targetHz <= 0) {
       return null;
@@ -133,32 +193,45 @@
       .join(' • ');
   }
 
+  function summarizeBonuses(bonuses) {
+    if (!bonuses || !bonuses.length) {
+      return 'Nenhum bônus aplicado';
+    }
+
+    return bonuses
+      .map(function (bonus) {
+        return bonus.detail + ' (+' + bonus.delta + ')';
+      })
+      .join(' â€¢ ');
+  }
+
   function loadStoredState() {
     var stored = safeJsonParse(window.localStorage.getItem(storageKey), null);
     return stored || {};
   }
 
   function saveStoredState(state) {
-      var serializable = {
-        profiles: state.profiles,
-        history: state.history,
-        library: state.library.map(function (song) {
-          return {
+    var serializable = {
+      profiles: state.profiles,
+      history: state.history,
+      library: state.library.map(function (song) {
+        return {
           id: song.id,
           title: song.title,
           artist: song.artist,
-            genre: song.genre,
-            mode: song.mode,
-            audioUrl: song.audioUrl,
-            lyrics: song.lyricsText || '',
-            duration: song.duration,
-            lyricsText: song.lyricsText || '',
-            pitchGuideHz: song.pitchGuideHz,
-            pitchGuideLabel: song.pitchGuideLabel,
-          };
-        }),
-        selectedSongId: state.currentSong && state.currentSong.id,
-      };
+          genre: song.genre,
+          mode: song.mode,
+          audioUrl: song.audioUrl,
+          lyrics: song.lyricsText || '',
+          duration: song.duration,
+          lyricsText: song.lyricsText || '',
+          pitchGuideHz: song.pitchGuideHz,
+          pitchGuideLabel: song.pitchGuideLabel,
+        };
+      }),
+      selectedSongId: state.currentSong && state.currentSong.id,
+      librarySourceLabel: state.librarySourceLabel,
+    };
 
     window.localStorage.setItem(storageKey, JSON.stringify(serializable));
   }
@@ -212,6 +285,11 @@
       vm.timingGrade = 'Pronto';
       vm.modeLabel = 'Solo';
       vm.librarySourceLabel = 'Demo local';
+      vm.importStatus = 'Pronto para importar repertório.';
+      vm.importIssues = [];
+      vm.importedSongCount = 0;
+      vm.replacedSongCount = 0;
+      vm.importedAudioUrls = [];
       vm.newProfile = {
         nickname: '',
         emoji: '🎤',
@@ -221,6 +299,14 @@
       vm.library = stored.library && stored.library.length ? core.normalizeLibrary(stored.library) : createDemoLibrary();
       vm.filteredLibrary = [];
       vm.currentSong = vm.library[0];
+      vm.songEditor = {
+        title: vm.currentSong.title,
+        artist: vm.currentSong.artist,
+        genre: vm.currentSong.genre,
+        mode: vm.currentSong.mode,
+        pitchGuideHz: vm.currentSong.pitchGuideHz || '',
+        pitchGuideLabel: vm.currentSong.pitchGuideLabel || '',
+      };
       vm.currentTime = 0;
       vm.currentTimeLabel = '00:00';
       vm.progressPercent = 0;
@@ -252,7 +338,13 @@
       vm.voiceScoreDelta = 0;
       vm.performanceScore = 100;
       vm.performancePenalties = [];
+      vm.performanceBonuses = [];
+      vm.performancePerfectStreak = 0;
+      vm.performanceErrorStreak = 0;
+      vm.performanceDbDelta = null;
       vm.performancePenaltySummary = 'Nenhuma penalidade aplicada';
+      vm.performanceBonusSummary = 'Nenhum bônus aplicado';
+      vm.performanceSummary = 'Pronto para avaliar timing e pitch.';
       vm.pitchDetectedHz = null;
       vm.pitchReferenceHz = null;
       vm.pitchDeltaCents = null;
@@ -260,6 +352,8 @@
       vm.pitchStatus = vm.pitchAnalysisSupported
         ? 'Tom pronto para leitura.'
         : 'Pitch indisponivel neste navegador.';
+      vm.pitchCalibrationPending = false;
+      vm.pitchCalibrationStatus = 'Sem calibração ativa.';
       vm.pitchMonitorActive = false;
       vm.pitchMonitorStatus = vm.pitchAnalysisSupported
         ? 'Aguardando leitura do microfone.'
@@ -293,9 +387,55 @@
         vm.lastVoiceEvent = null;
       }
 
+      function refreshSongEditor(song) {
+        var pitchGuideHz = Number(song && song.pitchGuideHz);
+
+        vm.songEditor = {
+          title: song && song.title ? song.title : '',
+          artist: song && song.artist ? song.artist : '',
+          genre: song && song.genre ? song.genre : '',
+          mode: song && song.mode ? song.mode : 'solo',
+          pitchGuideHz: Number.isFinite(pitchGuideHz) && pitchGuideHz > 0 ? String(pitchGuideHz) : '',
+          pitchGuideLabel: song && song.pitchGuideLabel ? song.pitchGuideLabel : '',
+        };
+      }
+
+      function downloadJsonFile(filename, payload) {
+        var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        var url = window.URL.createObjectURL(blob);
+        var anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = filename;
+        anchor.click();
+        window.setTimeout(function () {
+          window.URL.revokeObjectURL(url);
+        }, 250);
+      }
+
       function getPitchTargetHz() {
         var pitchGuideHz = Number(vm.currentSong && vm.currentSong.pitchGuideHz);
         return Number.isFinite(pitchGuideHz) && pitchGuideHz > 0 ? pitchGuideHz : null;
+      }
+
+      function applyPitchCalibration(detectedHz) {
+        var label = core.formatPitchGuideLabel(detectedHz);
+
+        if (!vm.currentSong || !Number.isFinite(detectedHz) || detectedHz <= 0) {
+          return;
+        }
+
+        vm.currentSong.pitchGuideHz = detectedHz;
+        vm.currentSong.pitchGuideLabel = label;
+        vm.pitchReferenceHz = detectedHz;
+        vm.pitchDetectedHz = detectedHz;
+        vm.pitchDeltaCents = 0;
+        vm.pitchGrade = 'Tom calibrado';
+        vm.pitchStatus = 'Tom de referencia ajustado para ' + detectedHz.toFixed(1) + ' Hz' + (label ? ' (' + label + ')' : '');
+        vm.pitchCalibrationPending = false;
+        vm.pitchCalibrationStatus = 'Calibrado em ' + detectedHz.toFixed(1) + ' Hz' + (label ? ' (' + label + ')' : '');
+        vm.pitchMonitorStatus = 'Tom de referencia gravado.';
+        vm.performanceDbDelta = null;
+        saveStoredState(vm);
       }
 
       function resetPitchSession() {
@@ -309,8 +449,18 @@
         vm.pitchMonitorStatus = vm.pitchAnalysisSupported
           ? 'Aguardando leitura do microfone.'
           : 'Leitura de tom indisponivel.';
+        vm.pitchCalibrationPending = false;
+        vm.pitchCalibrationStatus = vm.pitchReferenceHz
+          ? 'Tom de referencia definido em ' + vm.pitchReferenceHz.toFixed(1) + ' Hz.'
+          : 'Sem calibracao ativa.';
         vm.performancePenalties = [];
+        vm.performanceBonuses = [];
+        vm.performancePerfectStreak = 0;
+        vm.performanceErrorStreak = 0;
+        vm.performanceDbDelta = null;
         vm.performancePenaltySummary = 'Nenhuma penalidade aplicada';
+        vm.performanceBonusSummary = 'Nenhum bônus aplicado';
+        vm.performanceSummary = 'Pronto para avaliar timing e pitch.';
       }
 
       function stopPitchMonitoring() {
@@ -370,6 +520,13 @@
         detectedHz = estimatePitchFromBuffer(pitchBuffer, vm.pitchAudioContext.sampleRate);
         targetHz = getPitchTargetHz();
         vm.pitchReferenceHz = targetHz;
+
+        if (vm.pitchCalibrationPending && detectedHz) {
+          applyPitchCalibration(detectedHz);
+          updateScoreState(getBaseScoreResult());
+          $scope.$applyAsync();
+          return;
+        }
 
         if (detectedHz && targetHz) {
           nextDelta = hzToCents(detectedHz, targetHz);
@@ -462,20 +619,38 @@
         performance = core.evaluatePerformanceScore({
           timingDeltaMs: vm.performanceOffset,
           pitchDeltaCents: vm.pitchDeltaCents,
+          dbDelta: vm.performanceDbDelta,
+          mode: result.mode,
+          profileCount: vm.selectedProfiles.length || 1,
+          perfectStreak: vm.performancePerfectStreak,
+          errorStreak: vm.performanceErrorStreak,
         });
 
         var performanceDelta = hasPerformanceSignal ? performance.score - 100 : 0;
         var finalScore = core.clamp(baseScore + vm.voiceScoreDelta + performanceDelta, 0, 100);
 
+        if (hasPerformanceSignal) {
+          if (performance.penalties.length) {
+            vm.performanceErrorStreak += 1;
+            vm.performancePerfectStreak = 0;
+          } else {
+            vm.performancePerfectStreak += 1;
+            vm.performanceErrorStreak = 0;
+          }
+        }
+
         vm.baseScore = baseScore;
         vm.performanceScore = performance.score;
         vm.performancePenalties = performance.penalties;
+        vm.performanceBonuses = performance.bonuses;
         vm.performancePenaltySummary = summarizePenalties(performance.penalties);
+        vm.performanceBonusSummary = summarizeBonuses(performance.bonuses);
+        vm.performanceSummary = performance.penalties.length
+          ? vm.performancePenaltySummary
+          : vm.performanceBonusSummary;
         vm.liveScore = finalScore;
         vm.timingGrade = result.timingGrade;
-        vm.scoreHint = performance.penalties.length
-          ? result.hint + ' ' + vm.performancePenaltySummary
-          : result.hint;
+        vm.scoreHint = result.hint + ' ' + vm.performanceSummary;
         vm.modeLabel = result.mode;
         vm.pitchGrade = describePitchDelta(vm.pitchDeltaCents, appConfig.scoring.pitchToleranceCents);
         refreshPlaybackGateState();
@@ -771,6 +946,141 @@
         updateScoreState(getBaseScoreResult());
       };
 
+      vm.applySongEdits = function () {
+        var pitchGuideHz = Number(vm.songEditor.pitchGuideHz);
+
+        if (!vm.currentSong) {
+          return;
+        }
+
+        vm.currentSong.title = String(vm.songEditor.title || vm.currentSong.title).trim() || vm.currentSong.title;
+        vm.currentSong.artist = String(vm.songEditor.artist || vm.currentSong.artist).trim() || vm.currentSong.artist;
+        vm.currentSong.genre = String(vm.songEditor.genre || vm.currentSong.genre).trim() || vm.currentSong.genre;
+        vm.currentSong.mode = vm.songEditor.mode === 'duet' ? 'duet' : 'solo';
+
+        if (Number.isFinite(pitchGuideHz) && pitchGuideHz > 0) {
+          vm.currentSong.pitchGuideHz = pitchGuideHz;
+          vm.currentSong.pitchGuideLabel = core.formatPitchGuideLabel(pitchGuideHz);
+        } else {
+          delete vm.currentSong.pitchGuideHz;
+          delete vm.currentSong.pitchGuideLabel;
+        }
+
+        refreshSongEditor(vm.currentSong);
+        vm.refreshLibrary();
+        vm.refreshScore();
+        saveStoredState(vm);
+      };
+
+      vm.resetSongEditor = function () {
+        refreshSongEditor(vm.currentSong);
+      };
+
+      vm.exportBackup = function () {
+        var librarySnapshot = vm.library.map(function (song) {
+          var snapshot = Object.assign({}, song);
+          if (String(snapshot.audioUrl || '').indexOf('blob:') === 0) {
+            snapshot.audioUrl = '';
+          }
+          return snapshot;
+        });
+
+        downloadJsonFile('karaoke-family-hub-backup.json', {
+          exportedAt: new Date().toISOString(),
+          profiles: vm.profiles,
+          history: vm.history,
+          library: librarySnapshot,
+          selectedSongId: vm.currentSong && vm.currentSong.id,
+          librarySourceLabel: vm.librarySourceLabel,
+        });
+        vm.importStatus = 'Backup exportado com sucesso.';
+      };
+
+      vm.triggerBackupImport = function () {
+        var input = document.getElementById('backupInput');
+        if (input) {
+          input.value = '';
+          input.click();
+        }
+      };
+
+      vm.handleBackupImport = function (files) {
+        var file = files && files[0];
+
+        if (!file) {
+          vm.importStatus = 'Selecione um arquivo de backup valido.';
+          $scope.$applyAsync();
+          return;
+        }
+
+        readText(file)
+          .then(function (text) {
+            var payload = safeJsonParse(text, null);
+            var importedLibrary;
+
+            if (!payload || !Array.isArray(payload.library)) {
+              throw new Error('Backup invalido.');
+            }
+
+            importedLibrary = core.normalizeLibrary(payload.library);
+            importedLibrary = importedLibrary.map(function (song) {
+              if (String(song.audioUrl || '').indexOf('blob:') === 0) {
+                song.audioUrl = '';
+              }
+              return song;
+            });
+            vm.profiles = Array.isArray(payload.profiles) && payload.profiles.length ? payload.profiles : createDefaultProfiles();
+            vm.history = Array.isArray(payload.history) ? payload.history : [];
+            vm.library = importedLibrary;
+            vm.filteredLibrary = vm.library.slice();
+            vm.librarySourceLabel = payload.librarySourceLabel || 'Backup restaurado';
+            vm.currentSong = vm.library.find(function (song) {
+              return song.id === payload.selectedSongId;
+            }) || vm.library[0];
+            refreshSongEditor(vm.currentSong);
+            vm.selectedProfiles = [];
+            refreshMode();
+            vm.ranking = core.rankProfiles(vm.profiles).slice(0, 5);
+            resetVoiceSession();
+            resetPitchSession();
+            stopVoiceRecognition();
+            stopPitchMonitoring();
+            updateLyrics();
+            vm.refreshScore();
+            saveStoredState(vm);
+            vm.importStatus = 'Backup restaurado com sucesso.';
+            $scope.$applyAsync();
+          })
+          .catch(function (error) {
+            vm.importStatus = 'Falha ao restaurar backup: ' + (error && error.message ? error.message : 'erro desconhecido');
+            $scope.$applyAsync();
+          });
+      };
+
+      vm.togglePitchCalibration = function () {
+        if (!vm.pitchAnalysisSupported) {
+          vm.pitchCalibrationStatus = 'Pitch indisponivel neste navegador.';
+          return;
+        }
+
+        if (!vm.voiceSyncActive) {
+          vm.pitchCalibrationStatus = 'Ative a sincronizacao de voz antes de calibrar o tom.';
+          return;
+        }
+
+        vm.pitchCalibrationPending = !vm.pitchCalibrationPending;
+        if (vm.pitchCalibrationPending) {
+          vm.pitchCalibrationStatus = 'Calibracao pronta. Cante um tom limpo para gravar a referencia.';
+          vm.pitchMonitorStatus = 'Aguardando tom de referencia para calibracao.';
+          return;
+        }
+
+        vm.pitchCalibrationStatus = vm.pitchReferenceHz
+          ? 'Calibracao cancelada. Referencia atual mantida em ' + vm.pitchReferenceHz.toFixed(1) + ' Hz.'
+          : 'Calibracao cancelada.';
+        vm.pitchMonitorStatus = 'Leitura de tom normal.';
+      };
+
       vm.selectSong = function (song) {
         vm.currentSong = song;
         vm.currentTime = 0;
@@ -790,6 +1100,7 @@
         }
 
         vm.audioInstance = syncAudio(song);
+        refreshSongEditor(vm.currentSong);
         updateLyrics();
         vm.refreshScore();
         saveStoredState(vm);
@@ -981,12 +1292,15 @@
       };
 
       vm.triggerImport = function () {
+        vm.importStatus = 'Selecione uma pasta com manifest.json/repertory.json ou arquivos .lrc.';
+        vm.importIssues = [];
         document.getElementById('repertoryInput').click();
       };
 
       vm.handleImport = function (files) {
         var fileArray = Array.prototype.slice.call(files || []);
         if (!fileArray.length) {
+          vm.importStatus = 'Nenhum arquivo selecionado.';
           return;
         }
 
@@ -999,6 +1313,12 @@
         manifestPromise
           .then(function (payload) {
             if (payload && payload.songs) {
+              var report = createImportReport(payload);
+              if (!report.valid) {
+                vm.importStatus = 'Manifesto carregado com avisos.';
+                vm.importIssues = report.issues.slice();
+              }
+
               return Promise.all(
                 payload.songs.map(function (song) {
                   var lyricsText = song.lyrics || '';
@@ -1061,6 +1381,8 @@
               });
 
             if (!inferredSongs.length) {
+              vm.importStatus = 'Nenhuma faixa .lrc encontrada na pasta.';
+              vm.importIssues = ['Adicione pelo menos um arquivo .lrc ou um manifest.json/repertory.json.'];
               return { songs: [] };
             }
 
@@ -1079,6 +1401,11 @@
                 var lyricsText = song.lyrics || song.lyricsText || '';
                 var audioFile = audioPath ? map[audioPath] || map[audioPath.replace(/^\.\//, '')] : null;
                 var lyricsFile = lyricsPath ? map[lyricsPath] || map[lyricsPath.replace(/^\.\//, '')] : null;
+                var audioUrl = audioFile ? URL.createObjectURL(audioFile) : '';
+
+                if (audioUrl) {
+                  vm.importedAudioUrls.push(audioUrl);
+                }
 
                 return {
                   id: song.id || uid('song'),
@@ -1088,7 +1415,7 @@
                   mode: song.mode || 'solo',
                   pitchGuideHz: song.pitchGuideHz,
                   pitchGuideLabel: song.pitchGuideLabel,
-                  audioUrl: audioFile ? URL.createObjectURL(audioFile) : '',
+                  audioUrl: audioUrl,
                   duration: song.duration,
                   lyrics: lyricsFile ? '' : lyricsText,
                   lyricsText: lyricsText,
@@ -1096,8 +1423,14 @@
               }),
             );
 
-            vm.library = imported.concat(vm.library);
+            var merged = mergeImportedSongs(vm.library, imported);
+            vm.library = merged.songs;
             vm.librarySourceLabel = payload.title || 'Repertório importado';
+            vm.importedSongCount = imported.length;
+            vm.replacedSongCount = merged.replacedCount;
+            vm.importStatus = merged.replacedCount
+              ? 'Repertório importado com substituição de ' + merged.replacedCount + ' faixa(s) duplicada(s).'
+              : 'Repertório importado com sucesso.';
             vm.refreshLibrary();
             if (vm.library[0]) {
               vm.selectSong(vm.library[0]);
@@ -1107,6 +1440,9 @@
           })
           .catch(function (error) {
             console.error('Falha ao importar repertório', error);
+            vm.importStatus = 'Falha ao importar repertório: ' + (error && error.message ? error.message : 'erro desconhecido');
+            vm.importIssues = vm.importIssues.length ? vm.importIssues : ['Verifique o manifesto, os caminhos dos arquivos e o console do navegador.'];
+            $scope.$applyAsync();
           });
       };
 
@@ -1118,6 +1454,11 @@
 
       $scope.$on('$destroy', function () {
         stopTimer();
+        vm.importedAudioUrls.forEach(function (url) {
+          try {
+            window.URL.revokeObjectURL(url);
+          } catch (error) {}
+        });
       });
     },
   ]);

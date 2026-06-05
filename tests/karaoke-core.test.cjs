@@ -67,6 +67,21 @@ test('evaluatePerformanceScore applies timing, pitch and db penalties', () => {
   assert.equal(result.settings.timingPenalty, -5);
 });
 
+test('evaluatePerformanceScore rewards consistent clean performance', () => {
+  const result = core.evaluatePerformanceScore({
+    timingDeltaMs: 20,
+    pitchDeltaCents: 10,
+    dbDelta: 0,
+    perfectStreak: 3,
+    mode: 'Dueto',
+    profileCount: 2,
+  });
+
+  assert.equal(result.penalties.length, 0);
+  assert.ok(result.bonuses.length >= 2);
+  assert.ok(result.consistencyBonus >= 2);
+});
+
 test('settings expose playback gate labels', () => {
   assert.equal(core.settings.playback.readyStatus, 'Pronto para tocar');
   assert.equal(core.settings.playback.blockedStatus, 'Aguardando microfone pausado');
@@ -94,6 +109,11 @@ test('normalizeSong derives pitch guide label from frequency', () => {
   });
 
   assert.equal(song.pitchGuideLabel, 'A3');
+});
+
+test('formatPitchGuideLabel converts frequency to note label', () => {
+  assert.equal(core.formatPitchGuideLabel(246.94), 'B3');
+  assert.equal(core.formatPitchGuideLabel(0), '');
 });
 
 test('index loads settings before core and app', () => {

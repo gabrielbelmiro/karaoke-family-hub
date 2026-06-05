@@ -62,6 +62,17 @@
           />
         </div>
 
+        <div class="import-feedback" ng-if="vm.importStatus">
+          <strong>{{ vm.importStatus }}</strong>
+          <small ng-if="vm.importedSongCount">
+            {{ vm.importedSongCount }} faixa(s) importada(s)
+            <span ng-if="vm.replacedSongCount">• {{ vm.replacedSongCount }} duplicada(s) substituída(s)</span>
+          </small>
+          <ul ng-if="vm.importIssues.length">
+            <li ng-repeat="issue in vm.importIssues track by $index">{{ issue }}</li>
+          </ul>
+        </div>
+
         <label class="search">
           <span>Buscar música</span>
           <input
@@ -141,6 +152,9 @@
           <button class="ghost-button" type="button" ng-click="vm.toggleVoiceSync()">
             {{ vm.voiceSyncActive ? 'Desligar voz' : 'Sincronizar voz' }}
           </button>
+          <button class="ghost-button" type="button" ng-click="vm.togglePitchCalibration()">
+            {{ vm.pitchCalibrationPending ? 'Cancelar calibracao' : 'Calibrar tom' }}
+          </button>
           <div class="play-gate" ng-class="vm.playbackGateState">
             <span>Play</span>
             <strong>{{ vm.playbackGateMessage }}</strong>
@@ -159,6 +173,11 @@
             <span>Tom</span>
             <strong>{{ vm.pitchGrade }}</strong>
             <small>{{ vm.pitchStatus }}</small>
+          </div>
+          <div class="voice-status">
+            <span>Calibracao</span>
+            <strong>{{ vm.pitchCalibrationPending ? 'Em curso' : 'Pronta' }}</strong>
+            <small>{{ vm.pitchCalibrationStatus }}</small>
           </div>
         </div>
 
@@ -205,6 +224,16 @@
             <span>Penalidades</span>
             <strong>{{ vm.performanceScore }}</strong>
             <small>{{ vm.performancePenaltySummary }}</small>
+          </article>
+          <article class="score-card">
+            <span>Bônus</span>
+            <strong>{{ vm.performancePerfectStreak }}</strong>
+            <small>{{ vm.performanceBonusSummary }}</small>
+          </article>
+          <article class="score-card">
+            <span>Sequência</span>
+            <strong>{{ vm.performanceErrorStreak }}</strong>
+            <small>{{ vm.performanceSummary }}</small>
           </article>
           <article class="score-card">
             <span>Participantes</span>
@@ -304,6 +333,80 @@
               <strong>{{ vm.librarySourceLabel }}</strong>
             </div>
           </div>
+        </section>
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">GestÃ£o</p>
+              <h2>Editor da faixa</h2>
+            </div>
+          </div>
+
+          <form class="editor-form" ng-submit="vm.applySongEdits()">
+            <label>
+              <span>TÃ­tulo</span>
+              <input type="text" ng-model="vm.songEditor.title" />
+            </label>
+            <label>
+              <span>Artista</span>
+              <input type="text" ng-model="vm.songEditor.artist" />
+            </label>
+            <label>
+              <span>GÃªnero</span>
+              <input type="text" ng-model="vm.songEditor.genre" />
+            </label>
+            <label>
+              <span>Modo</span>
+              <select ng-model="vm.songEditor.mode">
+                <option value="solo">Solo</option>
+                <option value="duet">Dueto</option>
+              </select>
+            </label>
+            <label>
+              <span>Tom guia (Hz)</span>
+              <input type="number" min="0" step="0.01" ng-model="vm.songEditor.pitchGuideHz" />
+            </label>
+            <label>
+              <span>Tom convertido</span>
+              <input type="text" ng-model="vm.songEditor.pitchGuideLabel" disabled />
+            </label>
+            <div class="editor-actions">
+              <button class="primary-button" type="submit">Aplicar mudanÃ§as</button>
+              <button class="ghost-button" type="button" ng-click="vm.resetSongEditor()">Restaurar</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">HistÃ³rico</p>
+              <h2>Backup e sessÃµes</h2>
+            </div>
+            <button class="ghost-button" type="button" ng-click="vm.exportBackup()">Exportar backup</button>
+          </div>
+
+          <div class="backup-actions">
+            <button class="ghost-button" type="button" ng-click="vm.triggerBackupImport()">Restaurar backup</button>
+            <input
+              id="backupInput"
+              class="sr-only"
+              type="file"
+              accept="application/json,.json"
+              onchange="angular.element(this).scope().vm.handleBackupImport(this.files)"
+            />
+          </div>
+
+          <ol class="history-list" ng-if="vm.history.length">
+            <li ng-repeat="entry in vm.history | limitTo: 5 track by entry.id">
+              <span>
+                <strong>{{ entry.songTitle }}</strong>
+                <small>{{ entry.participants.join(', ') || 'Sem participantes' }} â€¢ {{ entry.mode }}</small>
+              </span>
+              <strong>{{ entry.score }}</strong>
+            </li>
+          </ol>
+          <p class="empty-state" ng-if="!vm.history.length">Nenhuma sessÃ£o registrada ainda.</p>
         </section>
       </aside>
     </main>
