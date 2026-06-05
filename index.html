@@ -118,6 +118,21 @@
           </div>
         </div>
 
+        <section class="now-playing">
+          <div class="now-playing-art" aria-hidden="true">
+            <span></span>
+          </div>
+          <div class="now-playing-copy">
+            <p>Agora tocando</p>
+            <strong>{{ vm.currentSong.title }}</strong>
+            <small>{{ vm.currentSong.artist }} · {{ vm.currentSong.genre }}</small>
+          </div>
+          <div class="now-playing-meta">
+            <span>Tempo</span>
+            <strong>{{ vm.currentTimeLabel }} / {{ vm.currentSong.durationLabel }}</strong>
+          </div>
+        </section>
+
         <article class="lyrics-stage">
           <p class="lyrics-kicker">Letras em foco</p>
           <div class="lyrics-meta">
