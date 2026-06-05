@@ -329,6 +329,28 @@ h1 {
   color: var(--text);
 }
 
+.stage-advanced {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.stage-advanced > button {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+.stage-advanced .calibration,
+.stage-advanced .voice-status,
+.stage-advanced .voice-sync button {
+  width: 100%;
+}
+
+.stage-advanced .voice-status:last-child {
+  grid-column: 1 / -1;
+}
+
 .session-mode {
   display: grid;
   gap: 4px;

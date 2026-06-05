@@ -168,32 +168,38 @@
           <div class="timeline-progress" ng-style="{ width: vm.progressPercent + '%' }"></div>
         </div>
 
-        <div class="calibration">
-          <label>
-            <span>Offset de sintonia</span>
-            <input
-              type="range"
-              min="-700"
-              max="700"
-              step="25"
-              ng-model="vm.performanceOffset"
-              ng-change="vm.refreshScore()"
-            />
-          </label>
-          <strong>{{ vm.performanceOffset }} ms</strong>
-        </div>
-
         <div class="voice-sync">
           <button class="ghost-button" type="button" ng-click="vm.toggleVoiceSync()">
             {{ vm.voiceSyncActive ? 'Desligar voz' : 'Sincronizar voz' }}
           </button>
-          <button class="ghost-button" type="button" ng-click="vm.togglePitchCalibration()">
-            {{ vm.pitchCalibrationPending ? 'Cancelar calibracao' : 'Calibrar tom' }}
+          <button class="ghost-button" type="button" ng-click="vm.toggleAdvancedControls()">
+            {{ vm.advancedControlsVisible ? 'Ocultar ajustes' : 'Mostrar ajustes' }}
           </button>
           <div class="play-gate" ng-class="vm.playbackGateState">
             <span>Play</span>
             <strong>{{ vm.playbackGateMessage }}</strong>
           </div>
+        </div>
+
+        <div class="stage-advanced" ng-if="vm.advancedControlsVisible">
+          <div class="calibration">
+            <label>
+              <span>Offset de sintonia</span>
+              <input
+                type="range"
+                min="-700"
+                max="700"
+                step="25"
+                ng-model="vm.performanceOffset"
+                ng-change="vm.refreshScore()"
+              />
+            </label>
+            <strong>{{ vm.performanceOffset }} ms</strong>
+          </div>
+
+          <button class="ghost-button" type="button" ng-click="vm.togglePitchCalibration()">
+            {{ vm.pitchCalibrationPending ? 'Cancelar calibracao' : 'Calibrar tom' }}
+          </button>
           <div class="voice-status">
             <span>Status</span>
             <strong>{{ vm.voiceSyncActive ? 'Escutando' : 'Aguardando' }}</strong>

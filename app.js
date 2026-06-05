@@ -335,6 +335,7 @@
         : 'SpeechRecognition indisponivel neste navegador. Use ' + appConfig.voice.browserHint + '.';
       vm.playbackGateState = 'ready';
       vm.playbackGateMessage = appConfig.playback.readyStatus;
+      vm.advancedControlsVisible = false;
       vm.voiceScoreDelta = 0;
       vm.performanceScore = 100;
       vm.performancePenalties = [];
@@ -944,6 +945,10 @@
 
       vm.refreshScore = function () {
         updateScoreState(getBaseScoreResult());
+      };
+
+      vm.toggleAdvancedControls = function () {
+        vm.advancedControlsVisible = !vm.advancedControlsVisible;
       };
 
       vm.applySongEdits = function () {
