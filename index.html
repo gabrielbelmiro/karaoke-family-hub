@@ -103,6 +103,7 @@
             </div>
           </button>
         </div>
+        </section>
       </section>
 
       <section class="panel stage-panel">
@@ -116,6 +117,40 @@
             <strong>{{ vm.modeLabel }}</strong>
           </div>
         </div>
+
+        <article class="lyrics-stage">
+          <p class="lyrics-kicker">Letras em foco</p>
+          <div class="lyrics-meta">
+            <span>{{ vm.currentSong.artist }}</span>
+            <span>{{ vm.activeLineLabel }}</span>
+          </div>
+
+          <div class="lyric-window">
+            <div class="lyric-line lyric-line-ghost" ng-if="vm.previousLine">
+              {{ vm.previousLine.text }}
+            </div>
+
+            <div class="lyric-line active">
+              <span
+                class="lyric-word"
+                ng-repeat="word in vm.activeLine.words track by $index"
+                ng-class="{ hot: word.active, warm: !word.active && word.before }"
+              >
+                {{ word.text }}
+              </span>
+            </div>
+
+            <div class="lyric-line lyric-line-ghost" ng-if="vm.nextLine">
+              {{ vm.nextLine.text }}
+            </div>
+          </div>
+        </article>
+
+        <section class="stage-block">
+          <div class="stage-block-header">
+            <p class="panel-kicker">Configurações</p>
+            <h3>Controles de execução</h3>
+          </div>
 
         <div class="player-strip">
           <button class="primary-button" type="button" ng-click="vm.togglePlayback()">
@@ -181,33 +216,13 @@
           </div>
         </div>
 
-        <article class="lyrics-stage">
-          <p class="lyrics-kicker">Letras em foco</p>
-          <div class="lyrics-meta">
-            <span>{{ vm.currentSong.artist }}</span>
-            <span>{{ vm.activeLineLabel }}</span>
+        </section>
+
+        <section class="stage-block">
+          <div class="stage-block-header">
+            <p class="panel-kicker">Resultado</p>
+            <h3>Score e alertas</h3>
           </div>
-
-          <div class="lyric-window">
-            <div class="lyric-line lyric-line-ghost" ng-if="vm.previousLine">
-              {{ vm.previousLine.text }}
-            </div>
-
-            <div class="lyric-line active">
-              <span
-                class="lyric-word"
-                ng-repeat="word in vm.activeLine.words track by $index"
-                ng-class="{ hot: word.active, warm: !word.active && word.before }"
-              >
-                {{ word.text }}
-              </span>
-            </div>
-
-            <div class="lyric-line lyric-line-ghost" ng-if="vm.nextLine">
-              {{ vm.nextLine.text }}
-            </div>
-          </div>
-        </article>
 
         <div class="footer-grid">
           <article class="score-card">

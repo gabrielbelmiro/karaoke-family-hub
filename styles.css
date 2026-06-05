@@ -306,6 +306,29 @@ h1 {
     linear-gradient(180deg, rgba(7, 13, 23, 0.95), rgba(8, 14, 24, 0.88));
 }
 
+.stage-block {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.stage-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 12px;
+}
+
+.stage-block-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
 .session-mode {
   display: grid;
   gap: 4px;
@@ -533,7 +556,7 @@ h1 {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
-  margin-top: 18px;
+  margin-top: 0;
 }
 
 .score-card {
