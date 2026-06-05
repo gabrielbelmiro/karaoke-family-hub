@@ -262,12 +262,16 @@ h1 {
 
 .song-card {
   width: 100%;
-  border-radius: 20px;
-  padding: 16px;
+  border-radius: 18px;
+  padding: 12px 14px;
   text-align: left;
   color: var(--text);
   position: relative;
   overflow: hidden;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
 }
 
 .song-card.active {
@@ -279,15 +283,17 @@ h1 {
 
 .song-card strong {
   display: block;
-  font-size: 1.05rem;
-  margin: 8px 0 4px;
+  font-size: 1rem;
+  margin: 6px 0 2px;
+  line-height: 1.15;
 }
 
 .song-card::before {
   content: '';
   position: absolute;
-  inset: 0 auto 0 0;
-  width: 6px;
+  inset: 10px auto 10px 10px;
+  width: 4px;
+  border-radius: 999px;
   background: linear-gradient(180deg, transparent, rgba(29, 185, 84, 0.95), transparent);
   opacity: 0;
   transition: opacity 0.18s ease;
@@ -302,18 +308,50 @@ h1 {
   align-items: center;
   gap: 8px;
   border-radius: 999px;
-  padding: 6px 10px;
+  padding: 5px 8px;
   color: #0b120d;
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  font-size: 0.74rem;
+  font-size: 0.68rem;
   font-weight: 800;
+  width: fit-content;
+}
+
+.song-cover {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.12), transparent 22%),
+    linear-gradient(135deg, rgba(29, 185, 84, 0.95), rgba(29, 185, 84, 0.5));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #08110a;
+}
+
+.song-cover span {
+  transform: translateY(0.5px);
+}
+
+.song-card-body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
 }
 
 .song-meta {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 14px;
+  display: grid;
+  justify-items: end;
+  gap: 4px;
   font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.song-meta span:last-child {
+  color: var(--text);
+  font-weight: 700;
 }
 
 .stage-panel {
