@@ -1,0 +1,23 @@
+{
+  "title": "Demo Familiar",
+  "songs": [
+    {
+      "id": "casa-de-cantoria",
+      "title": "Casa de Cantoria",
+      "artist": "Família Solar",
+      "genre": "Pop caseiro",
+      "mode": "solo",
+      "pitchGuideHz": 220,
+      "lyricsPath": "lyrics/casa-de-cantoria.lrc"
+    },
+    {
+      "id": "dueto-da-varanda",
+      "title": "Dueto da Varanda",
+      "artist": "Luna e Theo",
+      "genre": "Dueto pop",
+      "mode": "duet",
+      "pitchGuideHz": 246.94,
+      "lyricsPath": "lyrics/dueto-da-varanda.lrc"
+    }
+  ]
+}

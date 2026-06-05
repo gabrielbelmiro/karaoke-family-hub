@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Karaoke Family Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Montserrat:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body ng-app="karaokeFamilyHub" ng-controller="KaraokeController as vm">
+    <div class="ambient ambient-a"></div>
+    <div class="ambient ambient-b"></div>
+
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Karaokê familiar • repertório local • perfis e ranking</p>
+        <h1>Karaoke Family Hub</h1>
+        <p class="subcopy">
+          Perfis com apelidos, letras com foco no estilo caption e pontuação para solo ou
+          dueto.
+        </p>
+      </div>
+      <div class="topbar-stats">
+        <article>
+          <span>Musicas</span>
+          <strong>{{ vm.library.length }}</strong>
+        </article>
+        <article>
+          <span>Perfis</span>
+          <strong>{{ vm.profiles.length }}</strong>
+        </article>
+        <article>
+          <span>Modo</span>
+          <strong>{{ vm.modeLabel }}</strong>
+        </article>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel library-panel">
+        <div class="panel-header">
+          <div>
+            <p class="panel-kicker">Biblioteca</p>
+            <h2>Repertório</h2>
+          </div>
+          <button class="ghost-button" type="button" ng-click="vm.triggerImport()">
+            Importar pasta
+          </button>
+          <input
+            id="repertoryInput"
+            class="sr-only"
+            type="file"
+            webkitdirectory
+            directory
+            multiple
+            onchange="angular.element(this).scope().vm.handleImport(this.files)"
+          />
+        </div>
+
+        <label class="search">
+          <span>Buscar música</span>
+          <input
+            type="search"
+            placeholder="Título, artista ou tag"
+            ng-model="vm.searchTerm"
+            ng-change="vm.refreshLibrary()"
+          />
+        </label>
+
+        <div class="song-list">
+          <button
+            type="button"
+            class="song-card"
+            ng-repeat="song in vm.filteredLibrary track by song.id"
+            ng-class="{ active: song.id === vm.currentSong.id }"
+            ng-click="vm.selectSong(song)"
+          >
+            <span class="song-badge">{{ song.modeLabel }}</span>
+            <strong>{{ song.title }}</strong>
+            <small>{{ song.artist }} • {{ song.genre }}</small>
+            <small ng-if="song.pitchGuideLabel">
+              Tom guia: {{ song.pitchGuideLabel }} ({{ song.pitchGuideHz }} Hz)
+            </small>
+            <div class="song-meta">
+              <span>{{ song.durationLabel }}</span>
+              <span>{{ song.wordsCount }} palavras</span>
+            </div>
+          </button>
+        </div>
+      </section>
+
+      <section class="panel stage-panel">
+        <div class="panel-header">
+          <div>
+            <p class="panel-kicker">Palco</p>
+            <h2>{{ vm.currentSong.title }}</h2>
+          </div>
+          <div class="session-mode">
+            <span>{{ vm.currentSong.modeLabel }}</span>
+            <strong>{{ vm.modeLabel }}</strong>
+          </div>
+        </div>
+
+        <div class="player-strip">
+          <button class="primary-button" type="button" ng-click="vm.togglePlayback()">
+            {{ vm.playing ? 'Pausar' : 'Tocar' }}
+          </button>
+          <button class="ghost-button" type="button" ng-click="vm.restartSong()">Reiniciar</button>
+          <div class="time-badge">
+            <span>{{ vm.currentTimeLabel }}</span>
+            <span>/</span>
+            <span>{{ vm.currentSong.durationLabel }}</span>
+          </div>
+        </div>
+
+        <div class="timeline" ng-click="vm.seekByTimeline($event)">
+          <div class="timeline-progress" ng-style="{ width: vm.progressPercent + '%' }"></div>
+        </div>
+
+        <div class="calibration">
+          <label>
+            <span>Offset de sintonia</span>
+            <input
+              type="range"
+              min="-700"
+              max="700"
+              step="25"
+              ng-model="vm.performanceOffset"
+              ng-change="vm.refreshScore()"
+            />
+          </label>
+          <strong>{{ vm.performanceOffset }} ms</strong>
+        </div>
+
+        <div class="voice-sync">
+          <button class="ghost-button" type="button" ng-click="vm.toggleVoiceSync()">
+            {{ vm.voiceSyncActive ? 'Desligar voz' : 'Sincronizar voz' }}
+          </button>
+          <div class="play-gate" ng-class="vm.playbackGateState">
+            <span>Play</span>
+            <strong>{{ vm.playbackGateMessage }}</strong>
+          </div>
+          <div class="voice-status">
+            <span>Status</span>
+            <strong>{{ vm.voiceSyncActive ? 'Escutando' : 'Aguardando' }}</strong>
+            <small>{{ vm.voiceSyncStatus }}</small>
+          </div>
+          <div class="voice-status">
+            <span>Termo em foco</span>
+            <strong>{{ vm.currentVoiceWord }}</strong>
+            <small>{{ vm.currentVoiceTranscript || 'Sem voz capturada' }}</small>
+          </div>
+          <div class="voice-status">
+            <span>Tom</span>
+            <strong>{{ vm.pitchGrade }}</strong>
+            <small>{{ vm.pitchStatus }}</small>
+          </div>
+        </div>
+
+        <article class="lyrics-stage">
+          <p class="lyrics-kicker">Letras em foco</p>
+          <div class="lyrics-meta">
+            <span>{{ vm.currentSong.artist }}</span>
+            <span>{{ vm.activeLineLabel }}</span>
+          </div>
+
+          <div class="lyric-window">
+            <div class="lyric-line lyric-line-ghost" ng-if="vm.previousLine">
+              {{ vm.previousLine.text }}
+            </div>
+
+            <div class="lyric-line active">
+              <span
+                class="lyric-word"
+                ng-repeat="word in vm.activeLine.words track by $index"
+                ng-class="{ hot: word.active, warm: !word.active && word.before }"
+              >
+                {{ word.text }}
+              </span>
+            </div>
+
+            <div class="lyric-line lyric-line-ghost" ng-if="vm.nextLine">
+              {{ vm.nextLine.text }}
+            </div>
+          </div>
+        </article>
+
+        <div class="footer-grid">
+          <article class="score-card">
+            <span>Score da sessão</span>
+            <strong>{{ vm.liveScore }}</strong>
+            <small>{{ vm.scoreHint }}</small>
+          </article>
+          <article class="score-card">
+            <span>Timing</span>
+            <strong>{{ vm.timingGrade }}</strong>
+            <small>Baseado no alinhamento entre letra e playhead</small>
+          </article>
+          <article class="score-card">
+            <span>Penalidades</span>
+            <strong>{{ vm.performanceScore }}</strong>
+            <small>{{ vm.performancePenaltySummary }}</small>
+          </article>
+          <article class="score-card">
+            <span>Participantes</span>
+            <strong>{{ vm.selectedProfiles.length }}</strong>
+            <small>{{ vm.selectedProfileNames }}</small>
+          </article>
+        </div>
+
+        <div class="voice-alerts" ng-if="vm.voiceAlerts.length">
+          <div
+            class="voice-alert"
+            ng-repeat="alert in vm.voiceAlerts track by alert.id"
+            ng-class="{ penalty: alert.delta < 0, bonus: alert.delta > 0 }"
+          >
+            <strong>{{ alert.message }}</strong>
+            <small>{{ alert.delta > 0 ? '+' : '' }}{{ alert.delta }} pontos • {{ alert.timeLabel }}</small>
+          </div>
+        </div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">Perfis</p>
+              <h2>Apelidos da familia</h2>
+            </div>
+          </div>
+
+          <form class="profile-form" ng-submit="vm.addProfile()">
+            <label>
+              <span>Apelido</span>
+              <input type="text" ng-model="vm.newProfile.nickname" placeholder="Ex.: Lila da sala" />
+            </label>
+            <label>
+              <span>Emoji</span>
+              <input type="text" ng-model="vm.newProfile.emoji" maxlength="2" />
+            </label>
+            <button class="primary-button" type="submit">Criar perfil</button>
+          </form>
+
+          <div class="profile-list">
+            <button
+              type="button"
+              class="profile-pill"
+              ng-repeat="profile in vm.profiles track by profile.id"
+              ng-class="{ selected: profile.selected }"
+              ng-click="vm.toggleProfile(profile)"
+            >
+              <span class="profile-avatar" ng-style="{ background: profile.color }">
+                {{ profile.emoji }}
+              </span>
+              <span>
+                <strong>{{ profile.nickname }}</strong>
+                <small>Melhor: {{ profile.bestScore }}</small>
+              </span>
+            </button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">Ranking</p>
+              <h2>Top scores</h2>
+            </div>
+          </div>
+          <ol class="ranking-list">
+            <li ng-repeat="profile in vm.ranking track by profile.id">
+              <span>
+                <strong>{{ profile.nickname }}</strong>
+                <small>{{ profile.sessionCount }} sessões • {{ profile.modeLabel }}</small>
+              </span>
+              <strong>{{ profile.bestScore }}</strong>
+            </li>
+          </ol>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">Sessão</p>
+              <h2>Resumo</h2>
+            </div>
+          </div>
+          <div class="session-summary">
+            <div>
+              <span>Modo</span>
+              <strong>{{ vm.modeLabel }}</strong>
+            </div>
+            <div>
+              <span>Ativos</span>
+              <strong>{{ vm.selectedProfileNames }}</strong>
+            </div>
+            <div>
+              <span>Repertório</span>
+              <strong>{{ vm.librarySourceLabel }}</strong>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

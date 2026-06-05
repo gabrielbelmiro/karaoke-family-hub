@@ -1,0 +1,5 @@
+node_modules/
+dist/
+.claude-dev-helper/
+.DS_Store
+npm-debug.log*
