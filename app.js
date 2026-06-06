@@ -378,9 +378,9 @@
       var playingAnimation = null;
       var activeStateHydration = null;
 
-      vm.authenticated = !!activeUsername;
+      vm.authenticated = true;
       vm.accountUsername = activeUsername;
-      vm.accountDisplayName = session && session.displayName ? String(session.displayName) : activeUsername;
+      vm.accountDisplayName = session && session.displayName ? String(session.displayName) : 'Local';
       vm.authLoading = false;
       vm.loginError = '';
       vm.loginForm = {
