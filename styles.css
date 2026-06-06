@@ -85,6 +85,24 @@ button {
   align-items: end;
 }
 
+.brand-lockup {
+  display: grid;
+  gap: 8px;
+}
+
+.brand-badge {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 8px 14px;
+  border: 1px solid rgba(217, 107, 255, 0.26);
+  background: linear-gradient(135deg, rgba(217, 107, 255, 0.16), rgba(78, 27, 189, 0.16));
+  color: #f6e8ff;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
 .eyebrow,
 .panel-kicker,
 .lyrics-kicker {
@@ -106,6 +124,11 @@ h1 {
   line-height: 0.94;
   font-weight: 800;
   max-width: 11ch;
+  background: linear-gradient(135deg, #f4d7ff 0%, #d96bff 46%, #8b4dff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 22px rgba(217, 107, 255, 0.14);
 }
 
 .subcopy {
