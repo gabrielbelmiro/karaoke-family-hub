@@ -16,10 +16,10 @@ async function loadScript(src) {
 async function bootstrap() {
   var scripts = [
     '/vendor/angular.min.js',
-    './lib/belmiroke-db.js',
-    './lib/karaoke-settings.js',
-    './lib/karaoke-core.js',
-    './app.js',
+    '/lib/belmiroke-db.js',
+    '/lib/karaoke-settings.js',
+    '/lib/karaoke-core.js',
+    '/app.js',
   ];
 
   for (var index = 0; index < scripts.length; index += 1) {
