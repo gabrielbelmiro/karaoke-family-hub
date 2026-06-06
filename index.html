@@ -322,61 +322,6 @@
         <section class="panel">
           <div class="panel-header">
             <div>
-              <p class="panel-kicker">Gestao</p>
-              <h2>Editor da faixa</h2>
-            </div>
-          </div>
-
-          <form class="editor-form" ng-submit="vm.applySongEdits()">
-            <label>
-              <span>Capa da faixa</span>
-              <input type="url" ng-model="vm.songEditor.coverUrl" placeholder="URL da imagem, data URL ou deixe vazio para gerar capa" />
-            </label>
-            <label>
-              <span>Legenda da capa</span>
-              <input type="text" ng-model="vm.songEditor.coverLabel" placeholder="Auto-gerada se vazio" />
-            </label>
-            <label>
-              <span>Cor principal da capa</span>
-              <input type="text" ng-model="vm.songEditor.coverColor" placeholder="#d96bff" />
-            </label>
-            <label>
-              <span>Titulo</span>
-              <input type="text" ng-model="vm.songEditor.title" />
-            </label>
-            <label>
-              <span>Artista</span>
-              <input type="text" ng-model="vm.songEditor.artist" />
-            </label>
-            <label>
-              <span>Genero</span>
-              <input type="text" ng-model="vm.songEditor.genre" />
-            </label>
-            <label>
-              <span>Modo</span>
-              <select ng-model="vm.songEditor.mode">
-                <option value="solo">Solo</option>
-                <option value="duet">Dueto</option>
-              </select>
-            </label>
-            <label>
-              <span>Tom guia (Hz)</span>
-              <input type="number" min="0" step="0.01" ng-model="vm.songEditor.pitchGuideHz" />
-            </label>
-            <label>
-              <span>Tom convertido</span>
-              <input type="text" ng-model="vm.songEditor.pitchGuideLabel" disabled />
-            </label>
-            <div class="editor-actions">
-              <button class="primary-button" type="submit">Aplicar mudancas</button>
-              <button class="ghost-button" type="button" ng-click="vm.resetSongEditor()">Restaurar</button>
-            </div>
-          </form>
-        </section>
-
-        <section class="panel">
-          <div class="panel-header">
-            <div>
               <p class="panel-kicker">Historico</p>
               <h2>Backup e sessoes</h2>
             </div>

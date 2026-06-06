@@ -250,9 +250,7 @@ h1 {
 }
 
 .search input,
-.profile-form input,
-.editor-form input,
-.editor-form select {
+.profile-form input {
   border-radius: 16px;
   border: 1px solid var(--line);
   background: rgba(6, 13, 22, 0.8);
@@ -974,8 +972,6 @@ h1 {
 }
 
 .session-summary,
-.editor-form input:focus,
-.editor-form select:focus,
 .search input:focus,
 .profile-form input:focus {
   border-color: rgba(217, 107, 255, 0.45);
@@ -993,17 +989,6 @@ h1 {
   text-align: right;
 }
 
-.editor-form {
-  display: grid;
-  gap: 12px;
-}
-
-.editor-form label {
-  display: grid;
-  gap: 6px;
-}
-
-.editor-actions,
 .backup-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1142,17 +1127,6 @@ h1 {
   gap: 4px;
 }
 
-.editor-form {
-  display: grid;
-  gap: 12px;
-}
-
-.editor-form label {
-  display: grid;
-  gap: 8px;
-}
-
-.editor-actions,
 .backup-actions {
   display: flex;
   gap: 10px;
