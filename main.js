@@ -25,6 +25,12 @@ async function bootstrap() {
   for (var index = 0; index < scripts.length; index += 1) {
     await loadScript(scripts[index]);
   }
+
+  if (!window.angular || !window.angular.bootstrap) {
+    throw new Error('Angular nao foi carregado corretamente.');
+  }
+
+  window.angular.bootstrap(document.body, ['karaokeFamilyHub']);
 }
 
 bootstrap().catch(function (error) {
