@@ -50,6 +50,9 @@ Exemplo de `manifest.json`:
       "artist": "Família Solar",
       "genre": "Pop caseiro",
       "mode": "solo",
+      "coverUrl": "https://example.com/covers/casa-de-cantoria.jpg",
+      "coverLabel": "CC",
+      "coverColor": "#1db954",
       "pitchGuideHz": 220,
       "pitchGuideLabel": "A3",
       "audioPath": "audio/casa-de-cantoria.mp3",
@@ -63,7 +66,10 @@ Exemplo de `manifest.json`:
 O score e calculado localmente para a experiencia familiar. Ele combina progresso da musica, offset de sintonia, bonus por modo dueto e penalidades leves por timing/tom quando a leitura do microfone esta ativa.
 
 ### Opcional: referencia de tom
-O manifest pode incluir `pitchGuideHz` por musica para habilitar a validacao leve de pitch no navegador. O app deriva automaticamente `pitchGuideLabel` quando ele nao for informado. Se a faixa nao tiver essa referencia, o app continua funcionando apenas com timing e foco de letra.
+O manifest pode incluir `pitchGuideHz` por musica para habilitar a validacao leve de pitch no navegador. O app deriva automaticamente `pitchGuideLabel` quando ele nao for informado. O motor de score também usa a frequencia detectada no microfone para calcular nota e desvio em cents, e aplica penalidades diferentes quando o cantor fica acima ou abaixo do alvo. Se a faixa nao tiver essa referencia, o app continua funcionando apenas com timing e foco de letra.
+
+### Capa da faixa
+Cada faixa pode trazer `coverUrl` para uma imagem remota ou `coverPath` no import local. Se nenhuma capa for informada, o app gera uma capa visual deterministica com cor e sigla da musica.
 
 ## Voz e microfone
 O recurso de sincronizacao de voz usa `SpeechRecognition` do navegador quando disponivel e tenta ler o tom via `getUserMedia` + `AudioContext` para feedback leve de pitch.

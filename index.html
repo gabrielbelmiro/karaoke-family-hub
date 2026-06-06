@@ -91,12 +91,17 @@
             ng-class="{ active: song.id === vm.currentSong.id }"
             ng-click="vm.selectSong(song)"
           >
-            <span class="song-badge">{{ song.modeLabel }}</span>
-            <strong>{{ song.title }}</strong>
-            <small>{{ song.artist }} - {{ song.genre }}</small>
-            <small ng-if="song.pitchGuideLabel">
-              Tom guia: {{ song.pitchGuideLabel }} ({{ song.pitchGuideHz }} Hz)
-            </small>
+            <span class="song-cover" ng-style="vm.songCoverStyle(song)">
+              <span>{{ song.coverLabel }}</span>
+            </span>
+            <div class="song-card-body">
+              <span class="song-badge">{{ song.modeLabel }}</span>
+              <strong>{{ song.title }}</strong>
+              <small>{{ song.artist }} - {{ song.genre }}</small>
+              <small ng-if="song.pitchGuideLabel">
+                Tom guia: {{ song.pitchGuideLabel }} ({{ song.pitchGuideHz }} Hz)
+              </small>
+            </div>
             <div class="song-meta">
               <span>{{ song.durationLabel }}</span>
               <span>{{ song.wordsCount }} palavras</span>
@@ -119,7 +124,7 @@
         </div>
 
         <section class="now-playing">
-          <div class="now-playing-art" aria-hidden="true">
+          <div class="now-playing-art" aria-hidden="true" ng-style="vm.songCoverStyle(vm.currentSong)">
             <span></span>
           </div>
           <div class="now-playing-copy">
@@ -379,6 +384,18 @@
           </div>
 
           <form class="editor-form" ng-submit="vm.applySongEdits()">
+            <label>
+              <span>Capa da faixa</span>
+              <input type="url" ng-model="vm.songEditor.coverUrl" placeholder="URL da imagem, data URL ou deixe vazio para gerar capa" />
+            </label>
+            <label>
+              <span>Legenda da capa</span>
+              <input type="text" ng-model="vm.songEditor.coverLabel" placeholder="Auto-gerada se vazio" />
+            </label>
+            <label>
+              <span>Cor principal da capa</span>
+              <input type="text" ng-model="vm.songEditor.coverColor" placeholder="#1db954" />
+            </label>
             <label>
               <span>Titulo</span>
               <input type="text" ng-model="vm.songEditor.title" />

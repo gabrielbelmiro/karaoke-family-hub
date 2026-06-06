@@ -37,6 +37,19 @@
     });
   }
 
+  function readDataUrl(file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        resolve(String(reader.result || ''));
+      };
+      reader.onerror = function () {
+        reject(reader.error);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
   function safeJsonParse(text, fallback) {
     try {
       return JSON.parse(text);
@@ -222,6 +235,11 @@
           genre: song.genre,
           mode: song.mode,
           audioUrl: song.audioUrl,
+          coverUrl: song.coverUrl || '',
+          coverSource: song.coverSource || '',
+          coverLabel: song.coverLabel,
+          coverColor: song.coverColor,
+          coverAccent: song.coverAccent,
           lyrics: song.lyricsText || '',
           duration: song.duration,
           lyricsText: song.lyricsText || '',
@@ -304,6 +322,9 @@
         artist: vm.currentSong.artist,
         genre: vm.currentSong.genre,
         mode: vm.currentSong.mode,
+        coverUrl: vm.currentSong.coverUrl || '',
+        coverLabel: vm.currentSong.coverLabel || '',
+        coverColor: vm.currentSong.coverColor || '',
         pitchGuideHz: vm.currentSong.pitchGuideHz || '',
         pitchGuideLabel: vm.currentSong.pitchGuideLabel || '',
       };
@@ -348,6 +369,8 @@
       vm.performanceSummary = 'Pronto para avaliar timing e pitch.';
       vm.pitchDetectedHz = null;
       vm.pitchReferenceHz = null;
+      vm.pitchDetectedNote = '-';
+      vm.pitchTargetNote = '-';
       vm.pitchDeltaCents = null;
       vm.pitchGrade = 'Sem leitura';
       vm.pitchStatus = vm.pitchAnalysisSupported
@@ -396,6 +419,9 @@
           artist: song && song.artist ? song.artist : '',
           genre: song && song.genre ? song.genre : '',
           mode: song && song.mode ? song.mode : 'solo',
+          coverUrl: song && song.coverUrl ? song.coverUrl : '',
+          coverLabel: song && song.coverLabel ? song.coverLabel : '',
+          coverColor: song && song.coverColor ? song.coverColor : '',
           pitchGuideHz: Number.isFinite(pitchGuideHz) && pitchGuideHz > 0 ? String(pitchGuideHz) : '',
           pitchGuideLabel: song && song.pitchGuideLabel ? song.pitchGuideLabel : '',
         };
@@ -418,6 +444,23 @@
         return Number.isFinite(pitchGuideHz) && pitchGuideHz > 0 ? pitchGuideHz : null;
       }
 
+      vm.songCoverStyle = function (song) {
+        var accent = song && song.coverAccent ? song.coverAccent : '#0d3f26';
+        var color = song && song.coverColor ? song.coverColor : '#1db954';
+        var style = {
+          backgroundImage: 'linear-gradient(135deg, ' + color + ', ' + accent + ')',
+          backgroundColor: color,
+        };
+
+        if (song && song.coverUrl) {
+          style.backgroundImage = 'linear-gradient(135deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.18)), url(' + JSON.stringify(song.coverUrl) + ')';
+          style.backgroundSize = 'cover';
+          style.backgroundPosition = 'center';
+        }
+
+        return style;
+      };
+
       function applyPitchCalibration(detectedHz) {
         var label = core.formatPitchGuideLabel(detectedHz);
 
@@ -429,6 +472,8 @@
         vm.currentSong.pitchGuideLabel = label;
         vm.pitchReferenceHz = detectedHz;
         vm.pitchDetectedHz = detectedHz;
+        vm.pitchDetectedNote = label || '-';
+        vm.pitchTargetNote = label || '-';
         vm.pitchDeltaCents = 0;
         vm.pitchGrade = 'Tom calibrado';
         vm.pitchStatus = 'Tom de referencia ajustado para ' + detectedHz.toFixed(1) + ' Hz' + (label ? ' (' + label + ')' : '');
@@ -442,6 +487,8 @@
       function resetPitchSession() {
         vm.pitchDetectedHz = null;
         vm.pitchReferenceHz = getPitchTargetHz();
+        vm.pitchDetectedNote = '-';
+        vm.pitchTargetNote = vm.pitchReferenceHz ? core.formatPitchGuideLabel(vm.pitchReferenceHz) || '-' : '-';
         vm.pitchDeltaCents = null;
         vm.pitchGrade = 'Sem leitura';
         vm.pitchStatus = vm.pitchReferenceHz
@@ -510,7 +557,7 @@
         var targetHz;
         var pitchBuffer;
         var detectedHz;
-        var nextDelta;
+        var pitchAnalysis;
 
         if (!vm.pitchAnalyser || !vm.pitchAudioContext || !vm.playing) {
           return;
@@ -530,21 +577,30 @@
         }
 
         if (detectedHz && targetHz) {
-          nextDelta = hzToCents(detectedHz, targetHz);
+          pitchAnalysis = core.analyzePitchMatch(detectedHz, targetHz, appConfig.scoring.pitchToleranceCents);
           vm.pitchDetectedHz = detectedHz;
-          vm.pitchDeltaCents = nextDelta;
-          vm.pitchGrade = describePitchDelta(nextDelta, appConfig.scoring.pitchToleranceCents);
+          vm.pitchDetectedNote = pitchAnalysis.detectedNote || '-';
+          vm.pitchTargetNote = pitchAnalysis.targetNote || '-';
+          vm.pitchDeltaCents = pitchAnalysis.deltaCents;
+          vm.pitchGrade = pitchAnalysis.pitchGrade;
           vm.pitchStatus =
-            vm.pitchGrade + ' • alvo ' + targetHz.toFixed(1) + ' Hz • leitura ' + detectedHz.toFixed(1) + ' Hz';
+            vm.pitchGrade +
+            ' • alvo ' + vm.pitchTargetNote +
+            ' (' + targetHz.toFixed(1) + ' Hz)' +
+            ' • leitura ' + vm.pitchDetectedNote +
+            ' (' + detectedHz.toFixed(1) + ' Hz)' +
+            (Number.isFinite(pitchAnalysis.deltaCents) ? ' • ' + pitchAnalysis.deltaCents + ' cents' : '');
           vm.pitchMonitorStatus = 'Tom detectado em ' + detectedHz.toFixed(1) + ' Hz.';
         } else if (detectedHz) {
           vm.pitchDetectedHz = detectedHz;
+          vm.pitchDetectedNote = core.formatPitchGuideLabel(detectedHz) || '-';
           vm.pitchDeltaCents = null;
           vm.pitchGrade = 'Sem referencia';
           vm.pitchStatus = 'Tom detectado sem referencia local.';
           vm.pitchMonitorStatus = 'Tom detectado em ' + detectedHz.toFixed(1) + ' Hz.';
         } else {
           vm.pitchDetectedHz = null;
+          vm.pitchDetectedNote = '-';
           vm.pitchDeltaCents = null;
           vm.pitchGrade = 'Sem leitura';
           vm.pitchStatus = vm.pitchReferenceHz ? 'Sem leitura de tom' : 'Tom sem referencia local.';
@@ -620,6 +676,8 @@
         performance = core.evaluatePerformanceScore({
           timingDeltaMs: vm.performanceOffset,
           pitchDeltaCents: vm.pitchDeltaCents,
+          pitchDetectedHz: vm.pitchDetectedHz,
+          pitchTargetHz: vm.pitchReferenceHz,
           dbDelta: vm.performanceDbDelta,
           mode: result.mode,
           profileCount: vm.selectedProfiles.length || 1,
@@ -653,7 +711,13 @@
         vm.timingGrade = result.timingGrade;
         vm.scoreHint = result.hint + ' ' + vm.performanceSummary;
         vm.modeLabel = result.mode;
-        vm.pitchGrade = describePitchDelta(vm.pitchDeltaCents, appConfig.scoring.pitchToleranceCents);
+        vm.pitchGrade = performance.pitchAnalysis
+          ? performance.pitchAnalysis.pitchGrade
+          : describePitchDelta(vm.pitchDeltaCents, appConfig.scoring.pitchToleranceCents);
+        if (performance.pitchAnalysis) {
+          vm.pitchDetectedNote = performance.pitchAnalysis.detectedNote || vm.pitchDetectedNote;
+          vm.pitchTargetNote = performance.pitchAnalysis.targetNote || vm.pitchTargetNote;
+        }
         refreshPlaybackGateState();
       }
 
@@ -953,6 +1017,9 @@
 
       vm.applySongEdits = function () {
         var pitchGuideHz = Number(vm.songEditor.pitchGuideHz);
+        var coverUrl = String(vm.songEditor.coverUrl || '').trim();
+        var coverLabel = String(vm.songEditor.coverLabel || '').trim();
+        var coverColor = String(vm.songEditor.coverColor || '').trim();
 
         if (!vm.currentSong) {
           return;
@@ -962,6 +1029,11 @@
         vm.currentSong.artist = String(vm.songEditor.artist || vm.currentSong.artist).trim() || vm.currentSong.artist;
         vm.currentSong.genre = String(vm.songEditor.genre || vm.currentSong.genre).trim() || vm.currentSong.genre;
         vm.currentSong.mode = vm.songEditor.mode === 'duet' ? 'duet' : 'solo';
+        var normalizedCover = core.normalizeSong(vm.currentSong);
+        vm.currentSong.coverUrl = coverUrl;
+        vm.currentSong.coverLabel = coverLabel || normalizedCover.coverLabel;
+        vm.currentSong.coverColor = coverColor || normalizedCover.coverColor;
+        vm.currentSong.coverAccent = normalizedCover.coverAccent;
 
         if (Number.isFinite(pitchGuideHz) && pitchGuideHz > 0) {
           vm.currentSong.pitchGuideHz = pitchGuideHz;
@@ -1328,35 +1400,34 @@
                 payload.songs.map(function (song) {
                   var lyricsText = song.lyrics || '';
                   var lyricsPath = song.lyricsPath || song.lyricPath;
-                  if (lyricsPath && map[lyricsPath]) {
-                    return readText(map[lyricsPath]).then(function (text) {
-                      return {
-                        id: song.id,
-                        title: song.title,
-                        artist: song.artist,
-                        genre: song.genre,
-                        mode: song.mode,
-                        duration: song.duration,
-                        pitchGuideHz: song.pitchGuideHz,
-                        pitchGuideLabel: song.pitchGuideLabel,
-                        audioPath: song.audioPath || song.audio || song.audioUrl || '',
-                        lyrics: text,
-                        lyricsText: text,
-                      };
-                    });
-                  }
-                  return Promise.resolve({
-                    id: song.id,
-                    title: song.title,
-                    artist: song.artist,
-                    genre: song.genre,
-                    mode: song.mode,
-                    duration: song.duration,
-                    pitchGuideHz: song.pitchGuideHz,
-                    pitchGuideLabel: song.pitchGuideLabel,
-                    audioPath: song.audioPath || song.audio || song.audioUrl || '',
-                    lyrics: lyricsText,
-                    lyricsText: lyricsText,
+                  var coverPath = song.coverPath || song.coverImagePath || song.coverUrl || song.coverDataUrl || '';
+                  var audioPath = song.audioPath || song.audio || song.audioUrl || '';
+                  var lyricsFile = lyricsPath ? map[lyricsPath] || map[lyricsPath.replace(/^\.\//, '')] : null;
+                  var coverFile = coverPath && !/^https?:\/\//i.test(coverPath) && !/^data:/i.test(coverPath)
+                    ? map[coverPath] || map[coverPath.replace(/^\.\//, '')]
+                    : null;
+                  var lyricsPromise = lyricsFile ? readText(lyricsFile) : Promise.resolve(lyricsText);
+                  var coverPromise = coverFile ? readDataUrl(coverFile) : Promise.resolve(coverPath);
+
+                  return Promise.all([lyricsPromise, coverPromise]).then(function (results) {
+                    return {
+                      id: song.id,
+                      title: song.title,
+                      artist: song.artist,
+                      genre: song.genre,
+                      mode: song.mode,
+                      duration: song.duration,
+                      pitchGuideHz: song.pitchGuideHz,
+                      pitchGuideLabel: song.pitchGuideLabel,
+                      audioPath: audioPath,
+                      coverUrl: results[1] || '',
+                      coverSource: coverPath || '',
+                      coverLabel: song.coverLabel || '',
+                      coverColor: song.coverColor || '',
+                      coverAccent: song.coverAccent || '',
+                      lyrics: results[0],
+                      lyricsText: results[0],
+                    };
                   });
                 }),
               ).then(function (songs) {
@@ -1374,14 +1445,24 @@
               .map(function (file) {
                 return readText(file).then(function (text) {
                   var base = file.name.replace(/\.lrc$/i, '');
-                  return {
-                    id: base,
-                    title: base.replace(/[-_]/g, ' '),
-                    artist: 'Importado localmente',
-                    genre: 'Repertório',
-                    mode: 'solo',
-                    lyrics: text,
-                  };
+                  var coverFile = fileArray.find(function (candidate) {
+                    var candidateBase = candidate.name.replace(/\.(lrc|jpg|jpeg|png|webp)$/i, '');
+                    return candidateBase === base && /\.(jpg|jpeg|png|webp)$/i.test(candidate.name);
+                  });
+                  var coverPromise = coverFile ? readDataUrl(coverFile) : Promise.resolve('');
+
+                  return coverPromise.then(function (coverUrl) {
+                    var coverSeed = base.replace(/[-_]/g, ' ').trim();
+                    return {
+                      id: base,
+                      title: coverSeed,
+                      artist: 'Importado localmente',
+                      genre: 'Repertório',
+                      mode: 'solo',
+                      lyrics: text,
+                      coverUrl: coverUrl,
+                    };
+                  });
                 });
               });
 
@@ -1421,6 +1502,11 @@
                   pitchGuideHz: song.pitchGuideHz,
                   pitchGuideLabel: song.pitchGuideLabel,
                   audioUrl: audioUrl,
+                  coverUrl: song.coverUrl || '',
+                  coverSource: song.coverSource || '',
+                  coverLabel: song.coverLabel || '',
+                  coverColor: song.coverColor || '',
+                  coverAccent: song.coverAccent || '',
                   duration: song.duration,
                   lyrics: lyricsFile ? '' : lyricsText,
                   lyricsText: lyricsText,

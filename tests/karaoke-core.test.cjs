@@ -67,6 +67,18 @@ test('evaluatePerformanceScore applies timing, pitch and db penalties', () => {
   assert.equal(result.settings.timingPenalty, -5);
 });
 
+test('evaluatePerformanceScore detects pitch notes from frequencies', () => {
+  const result = core.evaluatePerformanceScore({
+    pitchDetectedHz: 261.63,
+    pitchTargetHz: 261.63,
+  });
+
+  assert.equal(result.penalties.length, 0);
+  assert.equal(result.pitchAnalysis.direction, 'aligned');
+  assert.equal(result.pitchAnalysis.detectedNote, 'C4');
+  assert.equal(result.pitchAnalysis.targetNote, 'C4');
+});
+
 test('evaluatePerformanceScore rewards consistent clean performance', () => {
   const result = core.evaluatePerformanceScore({
     timingDeltaMs: 20,
@@ -111,9 +123,31 @@ test('normalizeSong derives pitch guide label from frequency', () => {
   assert.equal(song.pitchGuideLabel, 'A3');
 });
 
+test('normalizeSong derives a cover theme when none is provided', () => {
+  const song = core.normalizeSong({
+    id: 'cover-track',
+    title: 'Casa de Cantoria',
+    artist: 'Família Solar',
+    lyrics: '[00:00.00]Tom e ritmo',
+  });
+
+  assert.ok(song.coverLabel.length > 0);
+  assert.ok(song.coverColor);
+  assert.ok(song.coverAccent);
+});
+
 test('formatPitchGuideLabel converts frequency to note label', () => {
   assert.equal(core.formatPitchGuideLabel(246.94), 'B3');
   assert.equal(core.formatPitchGuideLabel(0), '');
+});
+
+test('analyzePitchMatch returns note and cents data', () => {
+  const analysis = core.analyzePitchMatch(277.18, 261.63, 35);
+
+  assert.equal(analysis.targetNote, 'C4');
+  assert.equal(analysis.detectedNote, 'C#4');
+  assert.equal(analysis.direction, 'above');
+  assert.equal(typeof analysis.deltaCents, 'number');
 });
 
 test('index loads settings before core and app', () => {
