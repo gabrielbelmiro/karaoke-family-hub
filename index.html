@@ -18,10 +18,10 @@
 
     <header class="topbar">
       <div>
-        <p class="eyebrow">Karaokê familiar • repertório local • perfis e ranking</p>
+        <p class="eyebrow">Karaoke familiar - repertorio local - perfis e ranking</p>
         <h1>Karaoke Family Hub</h1>
         <p class="subcopy">
-          Perfis com apelidos, letras com foco no estilo caption e pontuação para solo ou
+          Perfis com apelidos, letras com foco no estilo caption e pontuacao para solo ou
           dueto.
         </p>
       </div>
@@ -46,7 +46,7 @@
         <div class="panel-header">
           <div>
             <p class="panel-kicker">Biblioteca</p>
-            <h2>Repertório</h2>
+            <h2>Repertorio</h2>
           </div>
           <button class="ghost-button" type="button" ng-click="vm.triggerImport()">
             Importar pasta
@@ -66,7 +66,7 @@
           <strong>{{ vm.importStatus }}</strong>
           <small ng-if="vm.importedSongCount">
             {{ vm.importedSongCount }} faixa(s) importada(s)
-            <span ng-if="vm.replacedSongCount">• {{ vm.replacedSongCount }} duplicada(s) substituída(s)</span>
+            <span ng-if="vm.replacedSongCount">- {{ vm.replacedSongCount }} duplicada(s) substituida(s)</span>
           </small>
           <ul ng-if="vm.importIssues.length">
             <li ng-repeat="issue in vm.importIssues track by $index">{{ issue }}</li>
@@ -74,10 +74,10 @@
         </div>
 
         <label class="search">
-          <span>Buscar música</span>
+          <span>Buscar musica</span>
           <input
             type="search"
-            placeholder="Título, artista ou tag"
+            placeholder="Titulo, artista ou tag"
             ng-model="vm.searchTerm"
             ng-change="vm.refreshLibrary()"
           />
@@ -93,7 +93,7 @@
           >
             <span class="song-badge">{{ song.modeLabel }}</span>
             <strong>{{ song.title }}</strong>
-            <small>{{ song.artist }} • {{ song.genre }}</small>
+            <small>{{ song.artist }} - {{ song.genre }}</small>
             <small ng-if="song.pitchGuideLabel">
               Tom guia: {{ song.pitchGuideLabel }} ({{ song.pitchGuideHz }} Hz)
             </small>
@@ -125,7 +125,7 @@
           <div class="now-playing-copy">
             <p>Agora tocando</p>
             <strong>{{ vm.currentSong.title }}</strong>
-            <small>{{ vm.currentSong.artist }} · {{ vm.currentSong.genre }}</small>
+            <small>{{ vm.currentSong.artist }} - {{ vm.currentSong.genre }}</small>
           </div>
           <div class="now-playing-meta">
             <span>Tempo</span>
@@ -163,8 +163,8 @@
 
         <section class="stage-block">
           <div class="stage-block-header">
-            <p class="panel-kicker">Configurações</p>
-            <h3>Controles de execução</h3>
+            <p class="panel-kicker">Configuracoes</p>
+            <h3>Controles de execucao</h3>
           </div>
 
         <div class="player-strip">
@@ -247,7 +247,7 @@
 
         <div class="footer-grid">
           <article class="score-card">
-            <span>Score da sessão</span>
+            <span>Score da sessao</span>
             <strong>{{ vm.liveScore }}</strong>
             <small>{{ vm.scoreHint }}</small>
           </article>
@@ -262,12 +262,12 @@
             <small>{{ vm.performancePenaltySummary }}</small>
           </article>
           <article class="score-card">
-            <span>Bônus</span>
+            <span>Bonus</span>
             <strong>{{ vm.performancePerfectStreak }}</strong>
             <small>{{ vm.performanceBonusSummary }}</small>
           </article>
           <article class="score-card">
-            <span>Sequência</span>
+            <span>Sequencia</span>
             <strong>{{ vm.performanceErrorStreak }}</strong>
             <small>{{ vm.performanceSummary }}</small>
           </article>
@@ -285,7 +285,7 @@
             ng-class="{ penalty: alert.delta < 0, bonus: alert.delta > 0 }"
           >
             <strong>{{ alert.message }}</strong>
-            <small>{{ alert.delta > 0 ? '+' : '' }}{{ alert.delta }} pontos • {{ alert.timeLabel }}</small>
+            <small>{{ alert.delta > 0 ? '+' : '' }}{{ alert.delta }} pontos - {{ alert.timeLabel }}</small>
           </div>
         </div>
       </section>
@@ -341,7 +341,7 @@
             <li ng-repeat="profile in vm.ranking track by profile.id">
               <span>
                 <strong>{{ profile.nickname }}</strong>
-                <small>{{ profile.sessionCount }} sessions ? {{ profile.modeLabel }}</small>
+                <small>{{ profile.sessionCount }} sessions - {{ profile.modeLabel }}</small>
               </span>
               <strong>{{ profile.bestScore }}</strong>
             </li>
