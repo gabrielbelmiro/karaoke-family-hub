@@ -16,6 +16,39 @@
     <div class="ambient ambient-a"></div>
     <div class="ambient ambient-b"></div>
 
+    <section class="login-screen" ng-if="!vm.authenticated">
+      <div class="login-card panel">
+        <div class="panel-header login-header">
+          <div>
+            <p class="panel-kicker">Acesso</p>
+            <h2>Entrar no BelmirÔKE</h2>
+          </div>
+        </div>
+
+        <form class="login-form" ng-submit="vm.login()">
+          <label>
+            <span>Usuário</span>
+            <input type="text" ng-model="vm.loginForm.username" autocomplete="username" placeholder="Ex.: familia" />
+          </label>
+          <label>
+            <span>Senha</span>
+            <input type="password" ng-model="vm.loginForm.password" autocomplete="current-password" placeholder="Digite sua senha" />
+          </label>
+          <button class="primary-button" type="submit" ng-disabled="vm.authLoading">
+            {{ vm.authLoading ? 'Entrando...' : 'Entrar' }}
+          </button>
+          <p class="login-error" ng-if="vm.loginError">{{ vm.loginError }}</p>
+          <p class="login-note">No primeiro acesso, a conta local e criada automaticamente. O repertorio e os perfis ficam salvos por usuario no banco local do navegador.</p>
+        </form>
+      </div>
+      <div class="login-brand">
+        <p class="brand-badge">BelmirÔKE</p>
+        <h1>BelmirÔKE</h1>
+        <p>Perfil, repertorio e score sincronizados antes de entrar no palco.</p>
+      </div>
+    </section>
+
+    <div ng-if="vm.authenticated">
     <header class="topbar">
       <div class="brand-lockup">
         <p class="brand-badge">BelmirÔKE</p>
@@ -39,6 +72,11 @@
           <span>Modo</span>
           <strong>{{ vm.modeLabel }}</strong>
         </article>
+      </div>
+      <div class="topbar-account">
+        <span>Conta ativa</span>
+        <strong>{{ vm.accountDisplayName || vm.accountUsername || 'Local' }}</strong>
+        <button class="ghost-button" type="button" ng-click="vm.logout()">Sair</button>
       </div>
     </header>
 
@@ -402,6 +440,7 @@
           </ol>
         </div>
       </section>
+    </div>
     </div>
 
     <script type="module" src="./main.js"></script>

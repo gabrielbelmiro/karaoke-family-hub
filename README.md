@@ -1,8 +1,10 @@
 # Karaoke Family Hub
 
 App de karaoke em AngularJS para uso em familia, com biblioteca local, perfis por apelido, ranking por score e destaque de letras sincronizado no estilo de captions dinamicas.
+O acesso agora passa por uma tela de login BelmirÔKE e cada usuario possui estado salvo em banco local do navegador.
 
 ## O que ele entrega
+- Tela de login antes da home principal com logo BelmirÔKE
 - Biblioteca de musicas com busca e selecao
 - Letras com foco visual por linha e por palavra
 - Perfis com apelidos, emoji e pontuacao acumulada
@@ -10,6 +12,7 @@ App de karaoke em AngularJS para uso em familia, com biblioteca local, perfis po
 - Modo solo e dueto
 - Sincronizacao de voz com penalidade "Fora de Ritmo", bonus por acerto e leitura leve de tom
 - Importacao de repertorio local via pasta
+- Persistencia local por usuario para perfis, repertorio e historico de canto
 
 ## Como rodar
 1. Entre na pasta `deliverables/karaoke-family-hub`

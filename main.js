@@ -16,6 +16,7 @@ async function loadScript(src) {
 async function bootstrap() {
   var scripts = [
     '/vendor/angular.min.js',
+    './lib/belmiroke-db.js',
     './lib/karaoke-settings.js',
     './lib/karaoke-core.js',
     './app.js',

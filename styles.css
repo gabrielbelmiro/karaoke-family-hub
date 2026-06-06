@@ -77,6 +77,66 @@ button {
   margin: 0 auto;
 }
 
+.login-screen {
+  width: min(720px, calc(100vw - 32px));
+  min-height: calc(100vh - 48px);
+  margin: 0 auto;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 24px;
+  padding: 24px 0 32px;
+}
+
+.login-card {
+  width: min(520px, 100%);
+  padding: 28px;
+}
+
+.login-header {
+  margin-bottom: 10px;
+}
+
+.login-form {
+  display: grid;
+  gap: 14px;
+}
+
+.login-form label {
+  display: grid;
+  gap: 8px;
+}
+
+.login-form input {
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(6, 13, 22, 0.8);
+  color: var(--text);
+  padding: 14px 16px;
+}
+
+.login-error {
+  color: #ffb7cb;
+  font-size: 0.95rem;
+}
+
+.login-note {
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.login-brand {
+  text-align: center;
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+.login-brand h1 {
+  max-width: none;
+}
+
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -143,6 +203,19 @@ h1 {
   display: grid;
   grid-template-columns: repeat(3, minmax(90px, 1fr));
   gap: 12px;
+}
+
+.topbar-account {
+  display: grid;
+  gap: 8px;
+  min-width: 160px;
+  justify-items: end;
+  text-align: right;
+}
+
+.topbar-account strong {
+  display: block;
+  font-size: 1rem;
 }
 
 .topbar-stats article,
