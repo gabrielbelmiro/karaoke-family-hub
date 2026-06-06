@@ -839,6 +839,25 @@ h1 {
   border-color: rgba(217, 107, 255, 0.34);
 }
 
+.end-session-ranking .ranking-list li.featured {
+  background: linear-gradient(135deg, rgba(217, 107, 255, 0.2), rgba(78, 27, 189, 0.14));
+  border-color: rgba(217, 107, 255, 0.42);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+}
+
+.end-session-ranking .ranking-list li.featured strong small {
+  display: inline-flex;
+  margin-left: 8px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  vertical-align: middle;
+}
+
 @keyframes modalFadeIn {
   from {
     opacity: 0;

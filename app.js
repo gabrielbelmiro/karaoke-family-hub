@@ -343,6 +343,7 @@
       vm.endSessionScore = 0;
       vm.endSessionMode = 'Solo';
       vm.endSessionRanking = [];
+      vm.endSessionFeaturedIds = [];
       vm.sessionFinalized = false;
       vm.scoreHint = 'Escolha uma faixa e ajuste o offset de sintonia.';
       vm.voiceSyncActive = false;
@@ -951,6 +952,13 @@
         updateScoreState(result);
 
         var participants = vm.selectedProfiles.length ? vm.selectedProfiles : [{ nickname: 'Solo', id: 'solo' }];
+        var featuredIds = participants
+          .filter(function (profile) {
+            return profile.id !== 'solo';
+          })
+          .map(function (profile) {
+            return profile.id;
+          });
         participants.forEach(function (profile) {
           if (profile.id === 'solo') {
             return;
@@ -978,6 +986,7 @@
         vm.endSessionScore = vm.liveScore;
         vm.endSessionMode = result.mode;
         vm.endSessionRanking = vm.ranking.slice(0, 5);
+        vm.endSessionFeaturedIds = featuredIds;
         vm.showEndRankModal = !!showModal;
         saveStoredState(vm);
       }
@@ -1311,6 +1320,10 @@
 
       vm.closeEndRankModal = function () {
         vm.showEndRankModal = false;
+      };
+
+      vm.isEndSessionFeatured = function (profileId) {
+        return vm.endSessionFeaturedIds.indexOf(profileId) !== -1;
       };
 
       vm.toggleVoiceSync = function () {

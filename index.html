@@ -469,12 +469,19 @@
         <div class="end-session-ranking">
           <p class="panel-kicker">Top 5</p>
           <ol class="ranking-list">
-            <li ng-repeat="profile in vm.endSessionRanking track by profile.id" style="--rank-index: {{$index}}">
+            <li
+              ng-repeat="profile in vm.endSessionRanking track by profile.id"
+              style="--rank-index: {{$index}}"
+              ng-class="{ featured: vm.isEndSessionFeatured(profile.id) }"
+            >
               <span>
                 <strong>{{ profile.nickname }}</strong>
                 <small>{{ profile.sessionCount }} sessions - {{ profile.modeLabel }}</small>
               </span>
-              <strong>{{ profile.bestScore }}</strong>
+              <strong>
+                {{ profile.bestScore }}
+                <small ng-if="vm.isEndSessionFeatured(profile.id)">Agora</small>
+              </strong>
             </li>
           </ol>
         </div>
