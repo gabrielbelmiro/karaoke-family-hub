@@ -295,46 +295,7 @@
         </div>
       </section>
 
-      <aside class="sidebar">
-        <section class="panel">
-          <div class="panel-header">
-            <div>
-              <p class="panel-kicker">Perfis</p>
-              <h2>Apelidos da familia</h2>
-            </div>
-          </div>
-
-          <form class="profile-form" ng-submit="vm.addProfile()">
-            <label>
-              <span>Apelido</span>
-              <input type="text" ng-model="vm.newProfile.nickname" placeholder="Ex.: Lila da sala" />
-            </label>
-            <label>
-              <span>Emoji</span>
-              <input type="text" ng-model="vm.newProfile.emoji" maxlength="2" />
-            </label>
-            <button class="primary-button" type="submit">Criar perfil</button>
-          </form>
-
-          <div class="profile-list">
-            <button
-              type="button"
-              class="profile-pill"
-              ng-repeat="profile in vm.profiles track by profile.id"
-              ng-class="{ selected: profile.selected }"
-              ng-click="vm.toggleProfile(profile)"
-            >
-              <span class="profile-avatar" ng-style="{ background: profile.color }">
-                {{ profile.emoji }}
-              </span>
-              <span>
-                <strong>{{ profile.nickname }}</strong>
-                <small>Melhor: {{ profile.bestScore }}</small>
-              </span>
-            </button>
-          </div>
-        </section>
-
+      <section class="secondary-panels">
         <section class="panel">
           <div class="panel-header">
             <div>
@@ -375,6 +336,7 @@
             </div>
           </div>
         </section>
+
         <section class="panel">
           <div class="panel-header">
             <div>
@@ -460,6 +422,47 @@
             </li>
           </ol>
           <p class="empty-state" ng-if="!vm.history.length">Nenhuma sessao registrada ainda.</p>
+        </section>
+      </section>
+
+      <aside class="sidebar">
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">Perfis</p>
+              <h2>Apelidos da familia</h2>
+            </div>
+          </div>
+
+          <form class="profile-form" ng-submit="vm.addProfile()">
+            <label>
+              <span>Apelido</span>
+              <input type="text" ng-model="vm.newProfile.nickname" placeholder="Ex.: Lila da sala" />
+            </label>
+            <label>
+              <span>Emoji</span>
+              <input type="text" ng-model="vm.newProfile.emoji" maxlength="2" />
+            </label>
+            <button class="primary-button" type="submit">Criar perfil</button>
+          </form>
+
+          <div class="profile-list">
+            <button
+              type="button"
+              class="profile-pill"
+              ng-repeat="profile in vm.profiles track by profile.id"
+              ng-class="{ selected: profile.selected }"
+              ng-click="vm.toggleProfile(profile)"
+            >
+              <span class="profile-avatar" ng-style="{ background: profile.color }">
+                {{ profile.emoji }}
+              </span>
+              <span>
+                <strong>{{ profile.nickname }}</strong>
+                <small>Melhor: {{ profile.bestScore }}</small>
+              </span>
+            </button>
+          </div>
         </section>
       </aside>
     </main>
