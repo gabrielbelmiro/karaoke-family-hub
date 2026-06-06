@@ -281,9 +281,9 @@
 
   function createDefaultProfiles() {
     return [
-      { id: uid('profile'), nickname: 'Nina', emoji: 'ðŸŽ¤', color: '#d96bff', bestScore: 84, totalScore: 246, sessionCount: 4, modeLabel: 'Solo', selected: false },
-      { id: uid('profile'), nickname: 'Bia', emoji: 'âœ¨', color: '#8b4dff', bestScore: 92, totalScore: 310, sessionCount: 6, modeLabel: 'Dueto', selected: false },
-      { id: uid('profile'), nickname: 'Davi', emoji: 'ðŸ”¥', color: '#c06dff', bestScore: 77, totalScore: 188, sessionCount: 3, modeLabel: 'Solo', selected: false },
+      { id: uid('profile'), nickname: 'Nina', emoji: '🎤', color: '#d96bff', bestScore: 84, totalScore: 246, sessionCount: 4, modeLabel: 'Solo', selected: false },
+      { id: uid('profile'), nickname: 'Bia', emoji: '✨', color: '#8b4dff', bestScore: 92, totalScore: 310, sessionCount: 6, modeLabel: 'Dueto', selected: false },
+      { id: uid('profile'), nickname: 'Davi', emoji: '🔥', color: '#c06dff', bestScore: 77, totalScore: 188, sessionCount: 3, modeLabel: 'Solo', selected: false },
     ];
   }
 
@@ -310,7 +310,7 @@
       vm.importedAudioUrls = [];
       vm.newProfile = {
         nickname: '',
-        emoji: 'ðŸŽ¤',
+        emoji: '🎤',
       };
       vm.profiles = stored.profiles && stored.profiles.length ? stored.profiles : createDefaultProfiles();
       vm.history = stored.history || [];
@@ -1395,7 +1395,7 @@
         vm.profiles.unshift({
           id: uid('profile'),
           nickname: nickname,
-          emoji: vm.newProfile.emoji || 'ðŸŽ¤',
+          emoji: vm.newProfile.emoji || '🎤',
           color: ['#d96bff', '#8b4dff', '#c06dff', '#a83dff', '#b24dff'][vm.profiles.length % 5],
           bestScore: 0,
           totalScore: 0,
@@ -1404,7 +1404,7 @@
           selected: false,
         });
         vm.newProfile.nickname = '';
-        vm.newProfile.emoji = 'ðŸŽ¤';
+        vm.newProfile.emoji = '🎤';
         vm.ranking = core.rankProfiles(vm.profiles).slice(0, 5);
         saveStoredState(vm);
       };
