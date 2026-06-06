@@ -31,6 +31,11 @@ body {
   color: var(--text);
 }
 
+ng-cloak,
+.ng-cloak {
+  display: none !important;
+}
+
 body {
   position: relative;
   overflow-x: hidden;

@@ -15,6 +15,7 @@
     },
   };
   var legacyStorageKey = 'karaoke-family-hub:v1';
+  var guestStorageKey = 'belmiroke:state:v1:guest';
   var sessionStorageKey = window.BelmirokeDb && window.BelmirokeDb.sessionKey ? window.BelmirokeDb.sessionKey : 'belmiroke:session:v1';
   var audioCache = [];
   var stageTimer = null;
@@ -233,7 +234,12 @@
   }
 
   function loadLegacyStoredState() {
-    var stored = safeJsonParse(window.localStorage.getItem(legacyStorageKey), null);
+    var stored = safeJsonParse(window.localStorage.getItem(guestStorageKey), null);
+    if (stored && Object.keys(stored).length) {
+      return stored;
+    }
+
+    stored = safeJsonParse(window.localStorage.getItem(legacyStorageKey), null);
     return stored || {};
   }
 
@@ -262,6 +268,9 @@
         };
       }),
       selectedSongId: state.currentSong && state.currentSong.id,
+      selectedProfileIds: (state.selectedProfiles || []).map(function (profile) {
+        return profile.id;
+      }),
       librarySourceLabel: state.librarySourceLabel,
     };
   }
@@ -270,18 +279,59 @@
     var username = normalizeAccountName(state.accountUsername || '');
     var serializable = buildStoredState(state);
 
+    window.localStorage.setItem(legacyStorageKey, JSON.stringify(serializable));
+    window.localStorage.setItem(guestStorageKey, JSON.stringify(serializable));
+
     if (!username) {
       return;
     }
 
     window.localStorage.setItem(getUserStorageKey(username), JSON.stringify(serializable));
-    window.localStorage.setItem(legacyStorageKey, JSON.stringify(serializable));
+    window.localStorage.removeItem(guestStorageKey);
 
     if (window.BelmirokeDb && window.BelmirokeDb.saveSnapshot) {
       window.BelmirokeDb.saveSnapshot(username, serializable).catch(function (error) {
         window.console.error('Falha ao salvar no banco local', error);
       });
     }
+  }
+
+  function applyStoredSnapshot(vm, snapshot) {
+    if (!snapshot) {
+      return;
+    }
+
+    if (Array.isArray(snapshot.profiles) && snapshot.profiles.length) {
+      vm.profiles = snapshot.profiles;
+    }
+
+    if (Array.isArray(snapshot.history)) {
+      vm.history = snapshot.history;
+    }
+
+    if (Array.isArray(snapshot.library) && snapshot.library.length) {
+      vm.library = core.normalizeLibrary(snapshot.library);
+    }
+
+    vm.librarySourceLabel = snapshot.librarySourceLabel || vm.librarySourceLabel;
+
+    if (snapshot.selectedSongId) {
+      vm.currentSong = vm.library.find(function (song) {
+        return song.id === snapshot.selectedSongId;
+      }) || vm.library[0] || vm.currentSong;
+    }
+
+    if (Array.isArray(snapshot.selectedProfileIds)) {
+      vm.selectedProfiles = vm.profiles.filter(function (profile) {
+        return snapshot.selectedProfileIds.indexOf(profile.id) !== -1;
+      });
+      refreshMode();
+    }
+
+    vm.ranking = core.rankProfiles(vm.profiles).slice(0, 5);
+    refreshSongEditor(vm.currentSong);
+    vm.refreshLibrary();
+    vm.refreshScore();
   }
 
   function createDemoLibrary() {
@@ -326,6 +376,7 @@
       var activeUsername = normalizeAccountName(session && session.username);
       var stored = activeUsername ? loadStoredState(activeUsername) : loadLegacyStoredState();
       var playingAnimation = null;
+      var activeStateHydration = null;
 
       vm.authenticated = !!activeUsername;
       vm.accountUsername = activeUsername;
@@ -500,6 +551,8 @@
               displayName: username,
             }));
             window.localStorage.setItem(getUserStorageKey(username), JSON.stringify(snapshot));
+            window.localStorage.setItem(legacyStorageKey, JSON.stringify(snapshot));
+            window.localStorage.removeItem(guestStorageKey);
             if (window.BelmirokeDb && window.BelmirokeDb.saveSnapshot) {
               return window.BelmirokeDb.saveSnapshot(username, snapshot);
             }
@@ -1509,6 +1562,7 @@
 
         refreshMode();
         vm.refreshScore();
+        saveStoredState(vm);
       };
 
       vm.addProfile = function () {
@@ -1708,6 +1762,30 @@
       vm.ranking = core.rankProfiles(vm.profiles).slice(0, 5);
       vm.selectSong(vm.currentSong);
       vm.refreshScore();
+
+      if (activeUsername) {
+        activeStateHydration = Promise.resolve()
+          .then(function () {
+            if (!window.BelmirokeDb || !window.BelmirokeDb.loadSnapshot) {
+              return null;
+            }
+
+            return window.BelmirokeDb.loadSnapshot(activeUsername);
+          })
+          .then(function (dbSnapshot) {
+            if (dbSnapshot && Object.keys(dbSnapshot).length) {
+              applyStoredSnapshot(vm, dbSnapshot);
+            } else if (stored && Object.keys(stored).length) {
+              applyStoredSnapshot(vm, stored);
+            }
+            $scope.$applyAsync();
+          })
+          .catch(function (error) {
+            window.console.error('Falha ao carregar estado da conta', error);
+          });
+      } else if (stored && Object.keys(stored).length) {
+        applyStoredSnapshot(vm, stored);
+      }
 
       $scope.$on('$destroy', function () {
         stopTimer();
