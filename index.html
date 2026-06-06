@@ -299,24 +299,6 @@
         <section class="panel">
           <div class="panel-header">
             <div>
-              <p class="panel-kicker">Ranking</p>
-              <h2>Top scores</h2>
-            </div>
-          </div>
-          <ol class="ranking-list">
-            <li ng-repeat="profile in vm.ranking track by profile.id">
-              <span>
-                <strong>{{ profile.nickname }}</strong>
-                <small>{{ profile.sessionCount }} sessions - {{ profile.modeLabel }}</small>
-              </span>
-              <strong>{{ profile.bestScore }}</strong>
-            </li>
-          </ol>
-        </section>
-
-        <section class="panel">
-          <div class="panel-header">
-            <div>
               <p class="panel-kicker">Sessao</p>
               <h2>Resumo</h2>
             </div>
@@ -466,6 +448,38 @@
         </section>
       </aside>
     </main>
+
+    <div class="end-session-modal" ng-if="vm.showEndRankModal" role="dialog" aria-modal="true">
+      <div class="end-session-backdrop" ng-click="vm.closeEndRankModal()"></div>
+      <section class="end-session-panel">
+        <div class="panel-header end-session-header">
+          <div>
+            <p class="panel-kicker">Final da musica</p>
+            <h2>{{ vm.endSessionTitle }}</h2>
+          </div>
+          <button class="ghost-button" type="button" ng-click="vm.closeEndRankModal()">Fechar</button>
+        </div>
+
+        <div class="end-session-score">
+          <span>Score atual</span>
+          <strong>{{ vm.endSessionScore }}</strong>
+          <small>{{ vm.endSessionMode }}</small>
+        </div>
+
+        <div class="end-session-ranking">
+          <p class="panel-kicker">Top 5</p>
+          <ol class="ranking-list">
+            <li ng-repeat="profile in vm.endSessionRanking track by profile.id">
+              <span>
+                <strong>{{ profile.nickname }}</strong>
+                <small>{{ profile.sessionCount }} sessions - {{ profile.modeLabel }}</small>
+              </span>
+              <strong>{{ profile.bestScore }}</strong>
+            </li>
+          </ol>
+        </div>
+      </section>
+    </div>
 
     <script type="module" src="./main.js"></script>
   </body>

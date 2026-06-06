@@ -338,6 +338,12 @@
       vm.nextLine = null;
       vm.activeLineLabel = 'Leitura inicial';
       vm.ranking = [];
+      vm.showEndRankModal = false;
+      vm.endSessionTitle = '';
+      vm.endSessionScore = 0;
+      vm.endSessionMode = 'Solo';
+      vm.endSessionRanking = [];
+      vm.sessionFinalized = false;
       vm.scoreHint = 'Escolha uma faixa e ajuste o offset de sintonia.';
       vm.voiceSyncActive = false;
       vm.voiceSyncSupported = !!speechRecognitionCtor;
@@ -929,10 +935,17 @@
         vm.currentVoiceWord = activeWord ? activeWord.text : '-';
       }
 
-      function finalizeSession() {
+      function finalizeSession(showModal) {
         if (!vm.currentSong) {
           return;
         }
+
+        if (vm.sessionFinalized) {
+          vm.showEndRankModal = vm.showEndRankModal || !!showModal;
+          return;
+        }
+
+        vm.sessionFinalized = true;
 
         var result = getBaseScoreResult();
         updateScoreState(result);
@@ -961,6 +974,11 @@
         });
 
         vm.ranking = core.rankProfiles(vm.profiles).slice(0, 5);
+        vm.endSessionTitle = vm.currentSong.title;
+        vm.endSessionScore = vm.liveScore;
+        vm.endSessionMode = result.mode;
+        vm.endSessionRanking = vm.ranking.slice(0, 5);
+        vm.showEndRankModal = !!showModal;
         saveStoredState(vm);
       }
 
@@ -980,7 +998,7 @@
           vm.playing = false;
           stopTimer();
           stopVoiceRecognition();
-          finalizeSession();
+          finalizeSession(true);
           $scope.$applyAsync();
         } else {
           $scope.$applyAsync();
@@ -1158,8 +1176,10 @@
         vm.pitchMonitorStatus = 'Leitura de tom normal.';
       };
 
-      vm.selectSong = function (song) {
+        vm.selectSong = function (song) {
         vm.currentSong = song;
+        vm.showEndRankModal = false;
+        vm.sessionFinalized = false;
         vm.currentTime = 0;
         vm.currentTimeLabel = '00:00';
         vm.progressPercent = 0;
@@ -1184,6 +1204,8 @@
       };
 
       vm.restartSong = function () {
+        vm.showEndRankModal = false;
+        vm.sessionFinalized = false;
         vm.currentTime = 0;
         vm.currentTimeLabel = '00:00';
         vm.progressPercent = 0;
@@ -1220,10 +1242,12 @@
             stopTimer();
             stopVoiceRecognition();
             stopPitchMonitoring();
-            finalizeSession();
+            finalizeSession(false);
             return;
           }
 
+          vm.showEndRankModal = false;
+          vm.sessionFinalized = false;
           vm.audioInstance.currentTime = vm.currentTime;
           var playResult = vm.audioInstance.play();
           if (playResult && typeof playResult.then === 'function') {
@@ -1281,8 +1305,12 @@
           stopTimer();
           stopVoiceRecognition();
           stopPitchMonitoring();
-          finalizeSession();
+          finalizeSession(false);
         }
+      };
+
+      vm.closeEndRankModal = function () {
+        vm.showEndRankModal = false;
       };
 
       vm.toggleVoiceSync = function () {
