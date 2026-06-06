@@ -214,8 +214,7 @@ h1 {
 
 .song-card:hover,
 .profile-pill:hover,
-.ranking-list li:hover,
-.history-list li:hover {
+.ranking-list li:hover {
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
 }
 
@@ -989,42 +988,6 @@ h1 {
   text-align: right;
 }
 
-.backup-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.history-list {
-  display: grid;
-  gap: 10px;
-  padding: 0;
-  margin: 16px 0 0;
-  list-style: none;
-}
-
-.history-list li {
-  border-radius: 18px;
-  padding: 12px 14px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: center;
-  backdrop-filter: blur(18px);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--line);
-}
-
-.history-list li small {
-  color: var(--muted);
-}
-
-.empty-state {
-  margin-top: 14px;
-  color: var(--muted);
-  font-size: 0.95rem;
-}
-
 .sidebar .panel {
   padding: 14px;
 }
@@ -1044,17 +1007,12 @@ h1 {
 .sidebar .song-card,
 .sidebar .profile-pill,
 .sidebar .ranking-list li,
-.sidebar .history-list li,
 .sidebar .session-summary,
 .sidebar .panel {
   border-radius: 18px;
 }
 
 .sidebar .ranking-list li strong:last-child {
-  font-size: 1rem;
-}
-
-.sidebar .history-list li strong:last-child {
   font-size: 1rem;
 }
 
@@ -1125,37 +1083,6 @@ h1 {
 .session-summary div {
   display: grid;
   gap: 4px;
-}
-
-.backup-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.history-list {
-  display: grid;
-  gap: 10px;
-  padding: 0;
-  margin: 16px 0 0;
-  list-style: none;
-}
-
-.history-list li {
-  border-radius: 18px;
-  padding: 12px 14px;
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  backdrop-filter: blur(18px);
-  background: rgba(15, 24, 38, 0.7);
-  border: 1px solid var(--line);
-}
-
-.empty-state {
-  margin-top: 14px;
-  color: var(--muted);
-  font-size: 0.95rem;
 }
 
 .sr-only {

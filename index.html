@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Karaoke Family Hub</title>
+    <title>BelmirÔKE</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -19,7 +19,7 @@
     <header class="topbar">
       <div>
         <p class="eyebrow">Karaoke familiar - repertorio local - perfis e ranking</p>
-        <h1>Karaoke Family Hub</h1>
+        <h1>BelmirÔKE</h1>
         <p class="subcopy">
           Perfis com apelidos, letras com foco no estilo caption e pontuacao para solo ou
           dueto.
@@ -319,37 +319,6 @@
           </div>
         </section>
 
-        <section class="panel">
-          <div class="panel-header">
-            <div>
-              <p class="panel-kicker">Historico</p>
-              <h2>Backup e sessoes</h2>
-            </div>
-            <button class="ghost-button" type="button" ng-click="vm.exportBackup()">Exportar backup</button>
-          </div>
-
-          <div class="backup-actions">
-            <button class="ghost-button" type="button" ng-click="vm.triggerBackupImport()">Restaurar backup</button>
-            <input
-              id="backupInput"
-              class="sr-only"
-              type="file"
-              accept="application/json,.json"
-              onchange="angular.element(this).scope().vm.handleBackupImport(this.files)"
-            />
-          </div>
-
-          <ol class="history-list" ng-if="vm.history.length">
-            <li ng-repeat="entry in vm.history | limitTo: 5 track by entry.id">
-              <span>
-                <strong>{{ entry.songTitle }}</strong>
-                <small>{{ entry.participants.join(', ') || 'Sem participantes' }} ? {{ entry.mode }}</small>
-              </span>
-              <strong>{{ entry.score }}</strong>
-            </li>
-          </ol>
-          <p class="empty-state" ng-if="!vm.history.length">Nenhuma sessao registrada ainda.</p>
-        </section>
       </section>
 
       <aside class="sidebar">
