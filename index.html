@@ -341,7 +341,7 @@
             <li ng-repeat="profile in vm.ranking track by profile.id">
               <span>
                 <strong>{{ profile.nickname }}</strong>
-                <small>{{ profile.sessionCount }} sessões • {{ profile.modeLabel }}</small>
+                <small>{{ profile.sessionCount }} sessions ? {{ profile.modeLabel }}</small>
               </span>
               <strong>{{ profile.bestScore }}</strong>
             </li>
@@ -351,7 +351,7 @@
         <section class="panel">
           <div class="panel-header">
             <div>
-              <p class="panel-kicker">Sessão</p>
+              <p class="panel-kicker">Sessao</p>
               <h2>Resumo</h2>
             </div>
           </div>
@@ -365,7 +365,7 @@
               <strong>{{ vm.selectedProfileNames }}</strong>
             </div>
             <div>
-              <span>Repertório</span>
+              <span>Repertorio</span>
               <strong>{{ vm.librarySourceLabel }}</strong>
             </div>
           </div>
@@ -373,14 +373,14 @@
         <section class="panel">
           <div class="panel-header">
             <div>
-              <p class="panel-kicker">GestÃ£o</p>
+              <p class="panel-kicker">Gestao</p>
               <h2>Editor da faixa</h2>
             </div>
           </div>
 
           <form class="editor-form" ng-submit="vm.applySongEdits()">
             <label>
-              <span>TÃ­tulo</span>
+              <span>Titulo</span>
               <input type="text" ng-model="vm.songEditor.title" />
             </label>
             <label>
@@ -388,7 +388,7 @@
               <input type="text" ng-model="vm.songEditor.artist" />
             </label>
             <label>
-              <span>GÃªnero</span>
+              <span>Genero</span>
               <input type="text" ng-model="vm.songEditor.genre" />
             </label>
             <label>
@@ -407,7 +407,7 @@
               <input type="text" ng-model="vm.songEditor.pitchGuideLabel" disabled />
             </label>
             <div class="editor-actions">
-              <button class="primary-button" type="submit">Aplicar mudanÃ§as</button>
+              <button class="primary-button" type="submit">Aplicar mudancas</button>
               <button class="ghost-button" type="button" ng-click="vm.resetSongEditor()">Restaurar</button>
             </div>
           </form>
@@ -416,8 +416,8 @@
         <section class="panel">
           <div class="panel-header">
             <div>
-              <p class="panel-kicker">HistÃ³rico</p>
-              <h2>Backup e sessÃµes</h2>
+              <p class="panel-kicker">Historico</p>
+              <h2>Backup e sessoes</h2>
             </div>
             <button class="ghost-button" type="button" ng-click="vm.exportBackup()">Exportar backup</button>
           </div>
@@ -437,12 +437,12 @@
             <li ng-repeat="entry in vm.history | limitTo: 5 track by entry.id">
               <span>
                 <strong>{{ entry.songTitle }}</strong>
-                <small>{{ entry.participants.join(', ') || 'Sem participantes' }} â€¢ {{ entry.mode }}</small>
+                <small>{{ entry.participants.join(', ') || 'Sem participantes' }} ? {{ entry.mode }}</small>
               </span>
               <strong>{{ entry.score }}</strong>
             </li>
           </ol>
-          <p class="empty-state" ng-if="!vm.history.length">Nenhuma sessÃ£o registrada ainda.</p>
+          <p class="empty-state" ng-if="!vm.history.length">Nenhuma sessao registrada ainda.</p>
         </section>
       </aside>
     </main>

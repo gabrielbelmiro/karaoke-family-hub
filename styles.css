@@ -729,6 +729,130 @@ h1 {
   align-self: start;
 }
 
+.profile-pill {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  border-radius: 18px;
+  padding: 10px 12px;
+  color: var(--text);
+  text-align: left;
+}
+
+.profile-pill:hover {
+  background: rgba(29, 185, 84, 0.05);
+}
+
+.profile-pill span {
+  min-width: 0;
+}
+
+.profile-pill strong {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 2px;
+}
+
+.profile-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.ranking-list {
+  padding-left: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.ranking-list li {
+  border-radius: 18px;
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.ranking-list li:hover {
+  background: rgba(29, 185, 84, 0.05);
+}
+
+.ranking-list li strong:last-child {
+  font-size: 1.1rem;
+}
+
+.session-summary {
+  border-radius: 18px;
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.session-summary div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.session-summary strong {
+  text-align: right;
+}
+
+.editor-form {
+  display: grid;
+  gap: 12px;
+}
+
+.editor-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.editor-actions,
+.backup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.history-list {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  margin: 16px 0 0;
+  list-style: none;
+}
+
+.history-list li {
+  border-radius: 18px;
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  backdrop-filter: blur(18px);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+}
+
+.history-list li small {
+  color: var(--muted);
+}
+
+.empty-state {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
 .profile-form {
   display: grid;
   gap: 12px;
