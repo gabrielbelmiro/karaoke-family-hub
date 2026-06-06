@@ -167,7 +167,7 @@ h1 {
 
 .panel {
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 18px;
 }
 
 .panel-header {
@@ -210,6 +210,13 @@ h1 {
 .song-card:hover,
 .profile-pill:hover {
   transform: translateY(-2px);
+}
+
+.song-card:hover,
+.profile-pill:hover,
+.ranking-list li:hover,
+.history-list li:hover {
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
 }
 
 .search {
@@ -279,6 +286,10 @@ h1 {
   box-shadow:
     0 0 0 1px rgba(29, 185, 84, 0.14),
     0 20px 44px rgba(29, 185, 84, 0.12);
+}
+
+.song-card:hover {
+  border-color: rgba(29, 185, 84, 0.24);
 }
 
 .song-card strong {
@@ -800,6 +811,7 @@ h1 {
   display: grid;
   gap: 10px;
   padding: 14px;
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .session-summary div {
