@@ -469,7 +469,7 @@
         <div class="end-session-ranking">
           <p class="panel-kicker">Top 5</p>
           <ol class="ranking-list">
-            <li ng-repeat="profile in vm.endSessionRanking track by profile.id">
+            <li ng-repeat="profile in vm.endSessionRanking track by profile.id" style="--rank-index: {{$index}}">
               <span>
                 <strong>{{ profile.nickname }}</strong>
                 <small>{{ profile.sessionCount }} sessions - {{ profile.modeLabel }}</small>

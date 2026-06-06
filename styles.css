@@ -831,6 +831,8 @@ h1 {
 
 .end-session-ranking .ranking-list li {
   background: rgba(255, 255, 255, 0.04);
+  animation: rankItemIn 240ms ease-out both;
+  animation-delay: calc(var(--rank-index, 0) * 80ms);
 }
 
 .end-session-ranking .ranking-list li:nth-child(1) {
@@ -856,6 +858,18 @@ h1 {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes rankItemIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
