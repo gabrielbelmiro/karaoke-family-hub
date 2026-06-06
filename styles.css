@@ -747,6 +747,7 @@ h1 {
   display: grid;
   place-items: center;
   padding: 24px;
+  animation: modalFadeIn 180ms ease-out;
 }
 
 .end-session-backdrop {
@@ -762,11 +763,18 @@ h1 {
   width: min(720px, calc(100vw - 32px));
   max-height: min(86vh, 920px);
   overflow: auto;
-  padding: 22px;
-  border-radius: 28px;
-  background: linear-gradient(180deg, rgba(25, 15, 34, 0.98), rgba(10, 6, 18, 0.98));
-  border: 1px solid rgba(217, 107, 255, 0.24);
-  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.5);
+  padding: 24px;
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at top left, rgba(217, 107, 255, 0.14), transparent 34%),
+    radial-gradient(circle at top right, rgba(78, 27, 189, 0.16), transparent 26%),
+    linear-gradient(180deg, rgba(25, 15, 34, 0.98), rgba(10, 6, 18, 0.98));
+  border: 1px solid rgba(217, 107, 255, 0.28);
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  transform-origin: center;
+  animation: modalPopIn 220ms cubic-bezier(0.2, 0.9, 0.2, 1);
 }
 
 .end-session-header {
@@ -775,11 +783,13 @@ h1 {
 
 .end-session-score {
   display: grid;
-  gap: 6px;
-  padding: 16px 18px;
-  border-radius: 22px;
-  background: linear-gradient(135deg, rgba(217, 107, 255, 0.14), rgba(78, 27, 189, 0.1));
-  border: 1px solid rgba(217, 107, 255, 0.18);
+  gap: 8px;
+  padding: 18px 20px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08), transparent 20%),
+    linear-gradient(135deg, rgba(217, 107, 255, 0.18), rgba(78, 27, 189, 0.12));
+  border: 1px solid rgba(217, 107, 255, 0.22);
 }
 
 .end-session-score span {
@@ -791,9 +801,20 @@ h1 {
 
 .end-session-score strong {
   display: block;
-  font-size: clamp(2.8rem, 7vw, 4.8rem);
-  line-height: 0.92;
+  font-size: clamp(3rem, 8vw, 5rem);
+  line-height: 0.9;
   color: #fff;
+  letter-spacing: -0.04em;
+}
+
+.end-session-score strong::after {
+  content: 'pts';
+  display: inline-block;
+  margin-left: 0.3em;
+  font-size: 0.38em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .end-session-score small {
@@ -802,6 +823,40 @@ h1 {
 
 .end-session-ranking {
   margin-top: 18px;
+}
+
+.end-session-ranking .ranking-list {
+  margin-top: 10px;
+}
+
+.end-session-ranking .ranking-list li {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.end-session-ranking .ranking-list li:nth-child(1) {
+  border-color: rgba(217, 107, 255, 0.34);
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .sidebar {
