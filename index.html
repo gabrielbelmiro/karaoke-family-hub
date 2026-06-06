@@ -12,7 +12,7 @@
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
-  <body ng-controller="KaraokeController as vm">
+  <body ng-app="karaokeFamilyHub" ng-controller="KaraokeController as vm">
     <div class="ambient ambient-a"></div>
     <div class="ambient ambient-b"></div>
 
@@ -35,9 +35,9 @@
             <input type="password" ng-model="vm.loginForm.password" autocomplete="current-password" placeholder="Digite sua senha" />
           </label>
           <button class="primary-button" type="submit" ng-disabled="vm.authLoading">
-            {{ vm.authLoading ? 'Entrando...' : 'Entrar' }}
+            Entrar
           </button>
-          <p class="login-error" ng-if="vm.loginError">{{ vm.loginError }}</p>
+          <p class="login-error" ng-show="vm.loginError" ng-bind="vm.loginError"></p>
           <p class="login-note">No primeiro acesso, a conta local e criada automaticamente. O repertorio e os perfis ficam salvos por usuario no banco local do navegador.</p>
         </form>
       </div>
@@ -48,7 +48,7 @@
       </div>
     </section>
 
-    <div ng-if="vm.authenticated" ng-cloak>
+    <div class="app-shell" ng-if="vm.authenticated" ng-cloak>
     <header class="topbar">
       <div class="brand-lockup">
         <p class="brand-badge">BelmirÔKE</p>
@@ -440,7 +440,6 @@
           </ol>
         </div>
       </section>
-    </div>
     </div>
 
     <script type="module" src="./main.js"></script>
