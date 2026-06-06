@@ -449,6 +449,10 @@ h1 {
   color: var(--text);
 }
 
+.stage-block-header {
+  padding-bottom: 2px;
+}
+
 .stage-advanced {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -699,19 +703,22 @@ h1 {
 
 .footer-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   margin-top: 0;
 }
 
 .score-card {
-  border-radius: 20px;
-  padding: 16px;
+  border-radius: 18px;
+  padding: 14px;
+  min-height: 108px;
+  display: grid;
+  align-content: start;
 }
 
 .score-card strong {
   display: block;
-  font-size: 1.8rem;
+  font-size: 1.65rem;
   margin: 6px 0 4px;
 }
 
@@ -851,6 +858,43 @@ h1 {
   margin-top: 14px;
   color: var(--muted);
   font-size: 0.95rem;
+}
+
+.sidebar .panel {
+  padding: 14px;
+}
+
+.sidebar .panel-header {
+  margin-bottom: 12px;
+}
+
+.sidebar .panel h2 {
+  font-size: 1.05rem;
+}
+
+.sidebar .profile-form {
+  margin-bottom: 12px;
+}
+
+.sidebar .song-card,
+.sidebar .profile-pill,
+.sidebar .ranking-list li,
+.sidebar .history-list li,
+.sidebar .session-summary,
+.sidebar .panel {
+  border-radius: 18px;
+}
+
+.sidebar .ranking-list li strong:last-child {
+  font-size: 1rem;
+}
+
+.sidebar .history-list li strong:last-child {
+  font-size: 1rem;
+}
+
+.sidebar .session-summary strong {
+  font-size: 0.96rem;
 }
 
 .profile-form {
