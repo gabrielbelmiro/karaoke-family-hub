@@ -397,13 +397,19 @@ h1 {
     linear-gradient(180deg, rgba(18, 18, 18, 0.98), rgba(12, 12, 12, 0.96));
 }
 
+.stage-panel > .panel-header {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .now-playing {
   display: grid;
   grid-template-columns: 72px minmax(0, 1fr) auto;
   gap: 16px;
   align-items: center;
   padding: 16px 18px;
-  margin-top: 2px;
+  margin-top: 12px;
   margin-bottom: 16px;
   border-radius: 20px;
   background: linear-gradient(135deg, rgba(217, 107, 255, 0.14), rgba(255, 255, 255, 0.03));
@@ -671,6 +677,7 @@ h1 {
 
 .lyrics-stage {
   margin-top: 4px;
+  margin-bottom: 10px;
   padding: 20px;
   border-radius: 26px;
   background:
