@@ -1,4 +1,4 @@
-﻿/* eslint-disable no-var, no-undef, no-unused-vars, indent, no-empty */
+/* eslint-disable no-var, no-undef, no-unused-vars, indent, no-empty */
 (function () {
   'use strict';
 
@@ -14,9 +14,7 @@
       browserHint: 'Chrome ou Edge',
     },
   };
-  var legacyStorageKey = 'karaoke-family-hub:v1';
-  var guestStorageKey = 'belmiroke:state:v1:guest';
-  var sessionStorageKey = window.BelmirokeDb && window.BelmirokeDb.sessionKey ? window.BelmirokeDb.sessionKey : 'belmiroke:session:v1';
+  var storageKey = 'karaoke-family-hub:v1';
   var audioCache = [];
   var stageTimer = null;
   var speechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition || null;
@@ -58,14 +56,6 @@
     } catch (error) {
       return fallback;
     }
-  }
-
-  function normalizeAccountName(value) {
-    return String(value || '').trim().toLowerCase();
-  }
-
-  function getUserStorageKey(username) {
-    return 'belmiroke:state:v1:' + normalizeAccountName(username);
   }
 
   function fileKey(file) {
@@ -213,7 +203,7 @@
       .map(function (penalty) {
         return penalty.detail + ' (' + penalty.delta + ')';
       })
-      .join('; ');
+      .join(' • ');
   }
 
   function summarizeBonuses(bonuses) {
@@ -225,26 +215,16 @@
       .map(function (bonus) {
         return bonus.detail + ' (+' + bonus.delta + ')';
       })
-      .join('; ');
+      .join(' â€¢ ');
   }
 
-  function loadStoredState(username) {
-    var stored = safeJsonParse(window.localStorage.getItem(getUserStorageKey(username)), null);
+  function loadStoredState() {
+    var stored = safeJsonParse(window.localStorage.getItem(storageKey), null);
     return stored || {};
   }
 
-  function loadLegacyStoredState() {
-    var stored = safeJsonParse(window.localStorage.getItem(guestStorageKey), null);
-    if (stored && Object.keys(stored).length) {
-      return stored;
-    }
-
-    stored = safeJsonParse(window.localStorage.getItem(legacyStorageKey), null);
-    return stored || {};
-  }
-
-  function buildStoredState(state) {
-    return {
+  function saveStoredState(state) {
+    var serializable = {
       profiles: state.profiles,
       history: state.history,
       library: state.library.map(function (song) {
@@ -268,70 +248,10 @@
         };
       }),
       selectedSongId: state.currentSong && state.currentSong.id,
-      selectedProfileIds: (state.selectedProfiles || []).map(function (profile) {
-        return profile.id;
-      }),
       librarySourceLabel: state.librarySourceLabel,
     };
-  }
 
-  function saveStoredState(state) {
-    var username = normalizeAccountName(state.accountUsername || '');
-    var serializable = buildStoredState(state);
-
-    window.localStorage.setItem(legacyStorageKey, JSON.stringify(serializable));
-    window.localStorage.setItem(guestStorageKey, JSON.stringify(serializable));
-
-    if (!username) {
-      return;
-    }
-
-    window.localStorage.setItem(getUserStorageKey(username), JSON.stringify(serializable));
-    window.localStorage.removeItem(guestStorageKey);
-
-    if (window.BelmirokeDb && window.BelmirokeDb.saveSnapshot) {
-      window.BelmirokeDb.saveSnapshot(username, serializable).catch(function (error) {
-        window.console.error('Falha ao salvar no banco local', error);
-      });
-    }
-  }
-
-  function applyStoredSnapshot(vm, snapshot) {
-    if (!snapshot) {
-      return;
-    }
-
-    if (Array.isArray(snapshot.profiles) && snapshot.profiles.length) {
-      vm.profiles = snapshot.profiles;
-    }
-
-    if (Array.isArray(snapshot.history)) {
-      vm.history = snapshot.history;
-    }
-
-    if (Array.isArray(snapshot.library) && snapshot.library.length) {
-      vm.library = core.normalizeLibrary(snapshot.library);
-    }
-
-    vm.librarySourceLabel = snapshot.librarySourceLabel || vm.librarySourceLabel;
-
-    if (snapshot.selectedSongId) {
-      vm.currentSong = vm.library.find(function (song) {
-        return song.id === snapshot.selectedSongId;
-      }) || vm.library[0] || vm.currentSong;
-    }
-
-    if (Array.isArray(snapshot.selectedProfileIds)) {
-      vm.selectedProfiles = vm.profiles.filter(function (profile) {
-        return snapshot.selectedProfileIds.indexOf(profile.id) !== -1;
-      });
-      refreshMode();
-    }
-
-    vm.ranking = core.rankProfiles(vm.profiles).slice(0, 5);
-    refreshSongEditor(vm.currentSong);
-    vm.refreshLibrary();
-    vm.refreshScore();
+    window.localStorage.setItem(storageKey, JSON.stringify(serializable));
   }
 
   function createDemoLibrary() {
@@ -372,21 +292,9 @@
     '$timeout',
     function ($scope, $timeout) {
       var vm = this;
-      var session = safeJsonParse(window.localStorage.getItem(sessionStorageKey), null);
-      var activeUsername = normalizeAccountName(session && session.username);
-      var stored = activeUsername ? loadStoredState(activeUsername) : loadLegacyStoredState();
+      var stored = loadStoredState();
       var playingAnimation = null;
-      var activeStateHydration = null;
 
-      vm.authenticated = !!activeUsername;
-      vm.accountUsername = activeUsername;
-      vm.accountDisplayName = session && session.displayName ? String(session.displayName) : activeUsername;
-      vm.authLoading = false;
-      vm.loginError = '';
-      vm.loginForm = {
-        username: activeUsername,
-        password: '',
-      };
       vm.searchTerm = '';
       vm.performanceOffset = 0;
       vm.playing = false;
@@ -491,92 +399,6 @@
       vm.pitchMediaStream = null;
       vm.pitchSource = null;
       vm.pitchTimer = null;
-
-      vm.login = function () {
-        var username = normalizeAccountName(vm.loginForm.username);
-        var password = String(vm.loginForm.password || '');
-        var snapshot;
-
-        if (!username || !password) {
-          vm.loginError = 'Informe usuario e senha.';
-          return;
-        }
-
-        vm.authLoading = true;
-        vm.loginError = '';
-
-        Promise.resolve()
-          .then(function () {
-            if (!window.BelmirokeDb || !window.BelmirokeDb.loginOrRegister) {
-              throw new Error('Banco local indisponivel.');
-            }
-
-            return window.BelmirokeDb.loginOrRegister(username, password);
-          })
-          .then(function () {
-            snapshot = loadStoredState(username);
-
-            if (snapshot && snapshot.library && snapshot.library.length) {
-              return snapshot;
-            }
-
-            return window.BelmirokeDb.loadSnapshot(username).then(function (dbSnapshot) {
-              if (dbSnapshot && dbSnapshot.library && dbSnapshot.library.length) {
-                snapshot = dbSnapshot;
-                return snapshot;
-              }
-
-              snapshot = loadLegacyStoredState();
-              if (snapshot && snapshot.library && snapshot.library.length) {
-                return snapshot;
-              }
-
-              snapshot = buildStoredState({
-                profiles: createDefaultProfiles(),
-                history: [],
-                library: createDemoLibrary(),
-                currentSong: createDemoLibrary()[0],
-                librarySourceLabel: 'Demo local',
-              });
-              return snapshot;
-            });
-          })
-          .then(function () {
-            vm.accountUsername = username;
-            vm.accountDisplayName = username;
-            vm.authenticated = true;
-            vm.loginForm.password = '';
-            window.localStorage.setItem(sessionStorageKey, JSON.stringify({
-              username: username,
-              displayName: username,
-            }));
-            window.localStorage.setItem(getUserStorageKey(username), JSON.stringify(snapshot));
-            window.localStorage.setItem(legacyStorageKey, JSON.stringify(snapshot));
-            window.localStorage.removeItem(guestStorageKey);
-            if (window.BelmirokeDb && window.BelmirokeDb.saveSnapshot) {
-              return window.BelmirokeDb.saveSnapshot(username, snapshot);
-            }
-            return null;
-          })
-          .then(function () {
-            window.location.reload();
-          })
-          .catch(function (error) {
-            vm.loginError = error && error.message ? error.message : 'Falha ao autenticar.';
-          })
-          .finally(function () {
-            vm.authLoading = false;
-            $scope.$applyAsync();
-          });
-      };
-
-      vm.logout = function () {
-        window.localStorage.removeItem(sessionStorageKey);
-        vm.authenticated = false;
-        vm.accountUsername = '';
-        vm.accountDisplayName = '';
-        window.location.reload();
-      };
 
       function pushVoiceAlert(message, delta) {
         vm.voiceAlerts.unshift({
@@ -1562,7 +1384,6 @@
 
         refreshMode();
         vm.refreshScore();
-        saveStoredState(vm);
       };
 
       vm.addProfile = function () {
@@ -1763,30 +1584,6 @@
       vm.selectSong(vm.currentSong);
       vm.refreshScore();
 
-      if (activeUsername) {
-        activeStateHydration = Promise.resolve()
-          .then(function () {
-            if (!window.BelmirokeDb || !window.BelmirokeDb.loadSnapshot) {
-              return null;
-            }
-
-            return window.BelmirokeDb.loadSnapshot(activeUsername);
-          })
-          .then(function (dbSnapshot) {
-            if (dbSnapshot && Object.keys(dbSnapshot).length) {
-              applyStoredSnapshot(vm, dbSnapshot);
-            } else if (stored && Object.keys(stored).length) {
-              applyStoredSnapshot(vm, stored);
-            }
-            $scope.$applyAsync();
-          })
-          .catch(function (error) {
-            window.console.error('Falha ao carregar estado da conta', error);
-          });
-      } else if (stored && Object.keys(stored).length) {
-        applyStoredSnapshot(vm, stored);
-      }
-
       $scope.$on('$destroy', function () {
         stopTimer();
         vm.importedAudioUrls.forEach(function (url) {
@@ -1798,4 +1595,3 @@
     },
   ]);
 })();
-

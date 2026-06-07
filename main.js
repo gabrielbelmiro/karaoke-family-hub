@@ -16,21 +16,14 @@ async function loadScript(src) {
 async function bootstrap() {
   var scripts = [
     '/vendor/angular.min.js',
-    '/lib/belmiroke-db.js',
-    '/lib/karaoke-settings.js',
-    '/lib/karaoke-core.js',
-    '/app.js',
+    './lib/karaoke-settings.js',
+    './lib/karaoke-core.js',
+    './app.js',
   ];
 
   for (var index = 0; index < scripts.length; index += 1) {
     await loadScript(scripts[index]);
   }
-
-  if (!window.angular || !window.angular.bootstrap) {
-    throw new Error('Angular nao foi carregado corretamente.');
-  }
-
-  window.angular.bootstrap(document.body, ['karaokeFamilyHub']);
 }
 
 bootstrap().catch(function (error) {

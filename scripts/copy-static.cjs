@@ -16,7 +16,6 @@ async function main() {
   const dist = path.join(root, 'dist');
 
   await copyFile(path.join(root, 'app.js'), path.join(dist, 'app.js'));
-  await copyFile(path.join(root, 'lib', 'belmiroke-db.js'), path.join(dist, 'lib', 'belmiroke-db.js'));
   await copyFile(path.join(root, 'lib', 'karaoke-settings.js'), path.join(dist, 'lib', 'karaoke-settings.js'));
   await copyFile(path.join(root, 'lib', 'karaoke-core.js'), path.join(dist, 'lib', 'karaoke-core.js'));
   await copyFile(
